@@ -1,2 +1,2 @@
-# Virtual Library - CLI Library Management System
+# Virtual Library - Java Library Management System
 
