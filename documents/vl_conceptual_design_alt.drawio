@@ -144,7 +144,7 @@
         <mxCell id="0ifpU9-hPzFAyu_cQy-y-58" value="&lt;span style=&quot;text-align: center; text-wrap: nowrap;&quot;&gt;series_id {PK}&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="0ifpU9-hPzFAyu_cQy-y-57">
           <mxGeometry y="30" width="140" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="0ifpU9-hPzFAyu_cQy-y-59" value="series_name {PAK}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="0ifpU9-hPzFAyu_cQy-y-57">
+        <mxCell id="0ifpU9-hPzFAyu_cQy-y-59" value="series_name {AK}" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="0ifpU9-hPzFAyu_cQy-y-57">
           <mxGeometry y="60" width="140" height="30" as="geometry" />
         </mxCell>
         <mxCell id="0ifpU9-hPzFAyu_cQy-y-76" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" edge="1" parent="1" source="0ifpU9-hPzFAyu_cQy-y-67" target="0ifpU9-hPzFAyu_cQy-y-45">
