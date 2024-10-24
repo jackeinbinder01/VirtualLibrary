@@ -1,2 +1,2 @@
-# Library Management System
-CS 5200 - Final Project
+# Virtual Library - CLI Library Management System
+
