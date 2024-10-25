@@ -261,12 +261,22 @@
         <mxCell id="0ifpU9-hPzFAyu_cQy-y-115" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.003;entryY=0.662;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="0ifpU9-hPzFAyu_cQy-y-77" target="0ifpU9-hPzFAyu_cQy-y-64">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="0ifpU9-hPzFAyu_cQy-y-119" value="Comprises" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="0ifpU9-hPzFAyu_cQy-y-115">
+          <mxGeometry x="-0.2774" relative="1" as="geometry">
+            <mxPoint x="5" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="0ifpU9-hPzFAyu_cQy-y-116" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.999;entryY=0.329;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="0ifpU9-hPzFAyu_cQy-y-51" target="0ifpU9-hPzFAyu_cQy-y-64">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="480" y="590" as="targetPoint" />
             <Array as="points">
               <mxPoint x="683" y="590" />
             </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="0ifpU9-hPzFAyu_cQy-y-117" value="Describes" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="0ifpU9-hPzFAyu_cQy-y-116">
+          <mxGeometry x="-0.2979" relative="1" as="geometry">
+            <mxPoint x="23" y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
