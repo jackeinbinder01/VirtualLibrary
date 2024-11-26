@@ -1,4 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `virtual_library_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE  IF NOT EXISTS `virtual_library_db` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `virtual_library_db`;
 -- MySQL dump 10.13  Distrib 8.0.38, for macos14 (arm64)
 --
@@ -293,6 +293,7 @@ CREATE TABLE `genre` (
 
 LOCK TABLES `genre` WRITE;
 /*!40000 ALTER TABLE `genre` DISABLE KEYS */;
+INSERT INTO `genre` VALUES ('Adventure'),('Contemporary Fiction'),('Cozy Mystery'),('Crime Fiction'),('Dark Fantasy'),('Detective Fiction'),('Dystopian'),('Epic Fantasy'),('Fantasy'),('Gothic Fiction'),('Historical Fiction'),('Historical Romance'),('Horror'),('Legal Thriller'),('Literary Fiction'),('Magical Realism'),('Mystery'),('New Adult'),('Paranormal Romance'),('Political Thriller'),('Post-Apocalyptic'),('Psychological Thriller'),('Romance'),('Science Fiction'),('Space Opera'),('Steampunk'),('Thriller'),('Time Travel Fiction'),('Urban Fantasy'),('Young Adult');
 /*!40000 ALTER TABLE `genre` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -436,4 +437,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-26 17:50:37
+-- Dump completed on 2024-11-26 18:08:49
