@@ -45,6 +45,9 @@ def work():
         while True:
             if login_options(connection):
                 im_in = True
+            else:
+                print("closing app")
+                return
     except Exception as e:
         print("error found")
     
