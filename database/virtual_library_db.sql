@@ -6,7 +6,7 @@ CREATE TABLE book
 (
     book_id INT AUTO_INCREMENT PRIMARY KEY
     , book_title VARCHAR(256) NOT NULL
-    , description TEXT NOT NULL
+    , description TEXT
     , release_date DATE NOT NULL
 
     , CONSTRAINT book_ak
