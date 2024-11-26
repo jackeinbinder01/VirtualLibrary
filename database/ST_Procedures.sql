@@ -5,8 +5,8 @@ USE virtual_library_db;
 DELIMITER $$
 -- logs in to a user
 CREATE PROCEDURE LoginUser (
-    IN input_username VARCHAR(64),
-    IN input_password VARCHAR(64),
+    IN i_username VARCHAR(64),
+    IN i_password VARCHAR(64),
     OUT login_status VARCHAR(16)
 )
 BEGIN
@@ -33,7 +33,7 @@ DELIMITER ;
 
 
 DELIMITER $$
--- adds a user to the DB
+-- adds user to the DB
 CREATE PROCEDURE AddUser (
     IN username_p VARCHAR(64),
     IN password_p VARCHAR(64)
@@ -46,11 +46,12 @@ BEGIN
     ELSE
         -- Insert the new user
         INSERT INTO user (user_name, password)
-        VALUES (username, password_p);
+        VALUES (username_p, password_p);
     END IF;
 END $$
 
 DELIMITER ;
+
 
 
 
