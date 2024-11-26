@@ -214,7 +214,7 @@ CREATE TABLE user_book_rating
     user_name VARCHAR(64) NOT NULL
     , book_id INT NOT NULL
     , text TEXT
-    , score INT
+    , score INT NOT NULL
 
     , CONSTRAINT user_book_rating_pk
         PRIMARY KEY(user_name, book_id)
