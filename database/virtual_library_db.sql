@@ -108,3 +108,22 @@ CREATE TABLE format
     , url VARCHAR(256) PRIMARY KEY
 );
 
+CREATE TABLE book_format
+(
+    book_id INT NOT NULL
+    , format_type VARCHAR(16) NOT NULL
+
+    , CONSTRAINT book_format_pk
+        PRIMARY KEY(book_id)
+
+    , CONSTRAINT book_format_fk_book
+        FOREIGN KEY (book_id) REFERENCES book (book_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT book_format_fk_format
+        FOREIGN KEY (format_type) REFERENCES format (format_type)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
