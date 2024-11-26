@@ -17,11 +17,12 @@ CREATE TABLE author
 (
     author_id INT AUTO_INCREMENT PRIMARY KEY
     , first_name VARCHAR(32) NOT NULL
+    , middle_name VARCHAR(32) DEFAULT '' NOT NULL
     , last_name VARCHAR(32) NOT NULL
     , email_address VARCHAR(64) NOT NULL
 
     , CONSTRAINT author_ak_name
-        UNIQUE(first_name, last_name)
+        UNIQUE(first_name, middle_name, last_name)
 
     , CONSTRAINT author_ak_email
         UNIQUE(email_address)
@@ -48,20 +49,23 @@ CREATE TABLE book_author
 
 CREATE TABLE publisher
 (
-    publisher_name VARCHAR(128) NOT NULL PRIMARY KEY
+    publisher_id INT AUTO_INCREMENT PRIMARY KEY
+    , publisher_name VARCHAR(128) NOT NULL
     , email_address VARCHAR(64) NOT NULL
 
-    , CONSTRAINT publisher_ak
-        UNIQUE(email_address)
+    , CONSTRAINT publisher_ak_name
+            UNIQUE(publisher_name)
+    , CONSTRAINT publisher_ak_email
+            UNIQUE(email_address)
 );
 
 CREATE TABLE book_publisher
 (
     book_id INT NOT NULL
-    , publisher_name VARCHAR(128) NOT NULL
+    , publisher_id INT NOT NULL
 
     , CONSTRAINT book_publisher_pk
-        PRIMARY KEY(book_id, publisher_name)
+        PRIMARY KEY(book_id, publisher_id)
 
     , CONSTRAINT book_publisher_fk_book
         FOREIGN KEY (book_id) REFERENCES book (book_id)
@@ -69,7 +73,7 @@ CREATE TABLE book_publisher
         ON UPDATE CASCADE
 
     , CONSTRAINT book_publisher_fk_publisher
-        FOREIGN KEY (publisher_name) REFERENCES publisher (publisher_name)
+        FOREIGN KEY (publisher_id) REFERENCES publisher (publisher_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
 );
@@ -104,17 +108,21 @@ CREATE TABLE book_series
 
 CREATE TABLE format
 (
-    format_type ENUM('Hard Cover', 'Paper Back', 'PDF', 'eBook') NOT NULL
-    , url VARCHAR(256) PRIMARY KEY
+    format_id INT AUTO_INCREMENT PRIMARY KEY
+    , format_type ENUM('Hard Cover', 'Paper Back', 'PDF', 'eBook', 'Audio Book') NOT NULL
+    , url VARCHAR(2048) NOT NULL
+
+    , CONSTRAINT format_ak
+        UNIQUE(url)
 );
 
 CREATE TABLE book_format
 (
     book_id INT NOT NULL
-    , format_type VARCHAR(16) NOT NULL
+    , format_id INT NOT NULL
 
     , CONSTRAINT book_format_pk
-        PRIMARY KEY(book_id)
+        PRIMARY KEY(book_id, format_id)
 
     , CONSTRAINT book_format_fk_book
         FOREIGN KEY (book_id) REFERENCES book (book_id)
@@ -122,11 +130,10 @@ CREATE TABLE book_format
         ON UPDATE CASCADE
 
     , CONSTRAINT book_format_fk_format
-        FOREIGN KEY (format_type) REFERENCES format (format_type)
+        FOREIGN KEY (format_id) REFERENCES format (format_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
-
 
 CREATE TABLE genre
 (
@@ -179,10 +186,7 @@ CREATE TABLE book_list_book
 CREATE TABLE user
 (
     user_name VARCHAR(64) PRIMARY KEY
-    , password VARCHAR(16) NOT NULL
-
-    , CONSTRAINT password_ck
-        CHECK(LENGTH(password) >= 8)
+    , password VARCHAR(64) NOT NULL
 );
 
 
@@ -211,6 +215,9 @@ CREATE TABLE user_book_rating
     , book_id INT NOT NULL
     , text TEXT
     , score INT
+
+    , CONSTRAINT user_book_rating_pk
+        PRIMARY KEY(user_name, book_id)
 
     , CONSTRAINT score_ck
         CHECK(score BETWEEN 1 AND 5)
