@@ -110,7 +110,7 @@ CREATE TABLE format
 (
     format_id INT AUTO_INCREMENT PRIMARY KEY
     , format_type ENUM('Hard Cover', 'Paper Back', 'PDF', 'eBook', 'Audio Book') NOT NULL
-    , url VARCHAR(2048) NOT NULL
+    , url VARCHAR(512) NOT NULL
 
     , CONSTRAINT format_ak
         UNIQUE(url)
