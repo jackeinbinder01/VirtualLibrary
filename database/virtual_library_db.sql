@@ -5,7 +5,7 @@ USE virtual_library_db;
 CREATE TABLE book
 (
     book_id INT AUTO_INCREMENT PRIMARY KEY
-    , book_title VARCHAR(256) NOT NULL
+    , book_title VARCHAR(128) NOT NULL
     , description TEXT NOT NULL
     , release_date DATE NOT NULL
 
