@@ -127,3 +127,101 @@ CREATE TABLE book_format
         ON UPDATE CASCADE
 );
 
+
+CREATE TABLE genre
+(
+    genre_name VARCHAR(32) PRIMARY KEY
+);
+
+CREATE TABLE book_genre
+(
+    book_id INT NOT NULL
+    , genre_name VARCHAR(32) NOT NULL
+
+    , CONSTRAINT book_genre_pk
+        PRIMARY KEY(book_id, genre_name)
+
+    , CONSTRAINT book_genre_fk_book
+        FOREIGN KEY (book_id) REFERENCES book (book_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT book_genre_fk_genre
+        FOREIGN KEY (genre_name) REFERENCES genre (genre_name)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE book_list
+(
+    list_name VARCHAR(64) PRIMARY KEY
+);
+
+CREATE TABLE book_list_book
+(
+    book_list_name VARCHAR(64) NOT NULL
+    , book_id INT NOT NULL
+
+    , CONSTRAINT book_list_book_pk
+        PRIMARY KEY(book_list_name, book_id)
+
+    , CONSTRAINT book_list_book_fk_book
+        FOREIGN KEY (book_id) REFERENCES book (book_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT book_list_book_fk_book_list
+        FOREIGN KEY (book_list_name) REFERENCES book_list (list_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE user
+(
+    user_name VARCHAR(64) PRIMARY KEY
+    , password VARCHAR(16) NOT NULL
+
+    , CONSTRAINT password_ck
+        CHECK(LENGTH(password) >= 8)
+);
+
+
+CREATE TABLE user_book_list
+(
+    user_name VARCHAR(64) NOT NULL
+    , book_list_name VARCHAR(64) NOT NULL
+
+    , CONSTRAINT user_book_list_pk
+        PRIMARY KEY(user_name, book_list_name)
+
+    , CONSTRAINT user_book_list_fk_user
+        FOREIGN KEY (user_name) REFERENCES user (user_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT user_book_list_fk_book_list
+        FOREIGN KEY (book_list_name) REFERENCES book_list (list_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE user_book_rating
+(
+    user_name VARCHAR(64) NOT NULL
+    , book_id INT NOT NULL
+    , text TEXT
+    , score INT
+
+    , CONSTRAINT score_ck
+        CHECK(score BETWEEN 1 AND 5)
+
+    , CONSTRAINT user_book_rating_fk_book
+        FOREIGN KEY (book_id) REFERENCES book (book_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+
+    , CONSTRAINT user_book_rating_fk_user
+        FOREIGN KEY (user_name) REFERENCES user (user_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
