@@ -16,13 +16,11 @@ CREATE TABLE book
 CREATE TABLE author
 (
     author_id INT AUTO_INCREMENT PRIMARY KEY
-    , first_name VARCHAR(32) NOT NULL
-    , middle_name VARCHAR(32) DEFAULT '' NOT NULL
-    , last_name VARCHAR(32) NOT NULL
+    , author_name VARCHAR(128) NOT NULL
     , email_address VARCHAR(64) NOT NULL
 
     , CONSTRAINT author_ak_name
-        UNIQUE(first_name, middle_name, last_name)
+        UNIQUE(author_name)
 
     , CONSTRAINT author_ak_email
         UNIQUE(email_address)
