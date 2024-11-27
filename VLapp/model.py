@@ -1,4 +1,5 @@
 import pymysql
+import datetime
 
 
 def connect_to_database():
@@ -129,3 +130,76 @@ def login_user(connection):
         return False
     finally:
         login_conn.close()
+        
+def print_books(book_list):
+     # Check if the list is not empty and print books
+    if book_list:
+        print("{:<10} {:<75} {:<15} {:<15} {:<15} {:<15} {:<15}".format(
+            "Book ID", "Book Title", "Release Date", "Genre", "Publisher", "Author", "Series"
+        ))
+        for book in book_list:
+            # Convert release_date to a string for display
+            date_str = book["release_date"].strftime('%Y-%m-%d') if book["release_date"] else "N/A"
+            print("{:<10} {:<75} {:<15} {:<15} {:<15} {:<15} {:<15}".format(
+                book["book_id"] or "N/A",
+                book["book_title"] or "N/A",
+                date_str,
+                book["genreName"] or "N/A",
+                book["publisherName"] or "N/A",
+                book["authorName"] or "N/A",
+                book["seriesName"] or "N/A"
+            ))
+    else:
+        print("No books found.")
+        
+def get_list(search_param, connection):
+    # Replace empty strings with None to match SQL's NULL behavior
+    search_param = [param if param != "" else None for param in search_param]
+    try:
+        get_list_conn = connection.cursor()
+
+        get_list_conn.callproc("GetBooksByFilters", search_param)
+
+        # Fetch results
+        book_list = get_list_conn.fetchall()
+        get_list_conn.close()
+        print_books(book_list)
+       
+
+    except pymysql.Error as e:
+        code, msg = e.args
+        print(f"Error retrieving books: {code} - {msg}")
+
+    except Exception as e:
+        # Catch any unexpected exceptions
+        print(f"Unexpected error: {e}")
+
+
+def filter_current_list(search_param, connection):
+    search_param = [param if param != "" else None for param in search_param]
+    try:
+        get_list_conn = connection.cursor()
+
+        get_list_conn.callproc("FilterCurrentList", search_param)
+
+        # Fetch results
+        book_list = get_list_conn.fetchall()
+        get_list_conn.close()
+        print_books(book_list)
+       
+
+    except pymysql.Error as e:
+        code, msg = e.args
+        print(f"Error retrieving books: {code} - {msg}")
+
+    except Exception as e:
+        # Catch any unexpected exceptions
+        print(f"Unexpected error: {e}")
+        
+def drop_current_list(connection):
+    try:
+        drop_list = connection.cursor()
+        drop_list.callproc("DropCurrentList")
+    except Exception as e:
+        # Catch any unexpected exceptions
+        print(f"Unexpected error: {e}")
