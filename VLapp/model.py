@@ -308,11 +308,38 @@ def manage_lists_logic(connection, username):
 
 
 def update_rating_logic(connection, username):
-    score = input("Enter a number (1 - 5): ").strip()
-    comment = input(f"Write some thoughts on why you gave this book a {score}: ").strip()
-    rate_book(username, score, comment, connection)
-
-
+    correct_book_bool = False
+    while not correct_book_bool:
+        book_id = input("What is the ID number of the book you are looking to rate: ")
+        book_title = search_book_by_id(connection, book_id)
+        correct_book = input("Is this the correct book? y/n\n")
+        if correct_book.lower().strip() == 'y':
+            correct_book_bool = True
+            break
+        if correct_book.lower().strip() == 'n':
+            print("Try a different code")
+        else:
+            print("Invalid input")
+    while True:
+        score = input("Enter a number (1 - 5):\n").strip()
+        if  0 < int(score) < 6:
+            score = int(score)
+            break
+        else:
+            print("Invalid input")
+    comment = input(f"Write some thoughts on why you gave {book_title} a {score}: ").strip()
+    rate_book(username, book_id, score, comment, connection)
+    
+def rate_book(username, book_id, score, comment, connection):
+    try:
+        book_rating = connection.cursor()
+        book_rating.callproc("AddOrUpdateBookRating", (username, book_id, score, comment))
+        connection.commit()
+        book_rating.close()
+        print("rating successful")
+    except pymysql.Error as e:
+        print(f"Error retrieving book: {e}")
+        
 def add_book_by_id_logic(connection):
     # Implement logic for adding a book by its ID
     pass
@@ -322,6 +349,24 @@ def remove_book_by_id_logic(connection):
     # Implement logic for removing a book by its ID
     pass
 
+def search_book_by_id(connection, book_id):
+    try:
+        # Call the stored procedure
+        search_a_book = connection.cursor()
+        search_a_book.callproc("GetBookById", (book_id,))
+        
+        # Fetch the results
+        books = search_a_book.fetchall()
+        search_a_book.close()
 
-
-    
+        # Check if any results were returned
+        if books:
+            for book in books:
+                print(f"Book ID: {book['book_id']}, Book Title: {book['book_title']}")
+                book_title = book['book_title']
+                return book_title
+        else:
+            print(f"No book found with ID: {book_id}")
+            return
+    except pymysql.Error as e:
+        print(f"Error retrieving book: {e}")
