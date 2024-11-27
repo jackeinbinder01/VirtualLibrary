@@ -194,12 +194,10 @@ DELIMITER ;
 
 
 DELIMITER ;
-
 DELIMITER $$
 
 CREATE PROCEDURE CreateSubList (
     IN input_user_name VARCHAR(64),
-    IN input_parent_list_name VARCHAR(64),
     IN input_sub_list_name VARCHAR(64),
     OUT sub_list_status VARCHAR(32)
 )
@@ -209,17 +207,6 @@ proc_block: BEGIN
         SELECT 1 FROM user WHERE user_name = input_user_name
     ) THEN
         SET sub_list_status = 'User Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the parent list exists for the user
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM user_book_list 
-        WHERE user_name = input_user_name 
-          AND book_list_name = input_parent_list_name
-    ) THEN
-        SET sub_list_status = 'Parent List Not Found';
         LEAVE proc_block;
     END IF;
 
@@ -242,6 +229,7 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
+
 
 
 DELIMITER $$
