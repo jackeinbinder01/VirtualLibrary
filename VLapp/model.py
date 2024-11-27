@@ -3,9 +3,6 @@ import datetime
 
 
 def connect_to_database():
-    """
-    Establish a connection to the MySQL database.
-    """
     while True:
         username = input("Enter your username: ").strip()
         pword = input("Enter your password: ").strip()
@@ -27,11 +24,6 @@ def connect_to_database():
                 return None
 
 def login_options(connection):
-    '''
-    ask user if they have an account
-    if no account make new one send data to DB
-    if not ask for username and password and ensure the DB has them.
-    '''
     while True:
         answer = input("enter a value based on the prompt below\n"
                        "1. Login to an existing account"
@@ -180,26 +172,33 @@ def filter_current_list(search_param, connection):
     try:
         get_list_conn = connection.cursor()
 
+        # Call the stored procedure
         get_list_conn.callproc("FilterCurrentList", search_param)
 
         # Fetch results
         book_list = get_list_conn.fetchall()
         get_list_conn.close()
-        print_books(book_list)
-       
 
+        if book_list:
+            print_books(book_list)
+        else:
+            print("No books found.")
     except pymysql.Error as e:
         code, msg = e.args
         print(f"Error retrieving books: {code} - {msg}")
-
     except Exception as e:
-        # Catch any unexpected exceptions
         print(f"Unexpected error: {e}")
+
         
 def drop_current_list(connection):
     try:
         drop_list = connection.cursor()
         drop_list.callproc("DropCurrentList")
+        drop_list.close()
+        print("the list has been cleared")
+        
     except Exception as e:
         # Catch any unexpected exceptions
         print(f"Unexpected error: {e}")
+        
+    

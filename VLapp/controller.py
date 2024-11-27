@@ -64,15 +64,18 @@ def work():
                                 # TODO
                             if user_continue.strip().lower() == "n":
                                 model.drop_current_list(connection)
+                                print("returning to search menu")
                                 break
-                            break
-                if search_menu_answer.strip() == '2':
+                if search_menu_answer.strip() == '2': # add by book id
                     pass
-                if search_menu_answer.strip() == '3':
+                if search_menu_answer.strip() == '3': # remove by book id
                     pass
-                if search_menu_answer.strip() == '4':
-                    pass
+                if search_menu_answer.strip() == '4': # update a rating on book
+                    score = input("enter an number 1 - 5")
+                    comment = input(f"write down some thoughts on why you gave this book a {score}")
+                    model.rate_book(username, score, comment, connection)
                 if search_menu_answer.strip().lower == 'q':
+                    print("returning to main menu")
                     break
             if main_menu_answer.strip() == "2":
                 pass
