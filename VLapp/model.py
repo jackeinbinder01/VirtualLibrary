@@ -336,7 +336,7 @@ def rate_book(username, book_id, score, comment, connection):
         book_rating.callproc("AddOrUpdateBookRating", (username, book_id, score, comment))
         connection.commit()
         book_rating.close()
-        print("rating successful")
+        print("Rating successful\nReturning to search menu")
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
         
