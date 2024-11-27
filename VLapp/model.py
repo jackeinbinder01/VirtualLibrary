@@ -230,7 +230,8 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. if you would like to add new book list\n2. to delete") # TODO
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. return to main menu\n") # TODO
+    return answer
 
 def application_logic(connection, username):
     while True: 
@@ -300,7 +301,26 @@ def manage_lists_logic(connection, username):
         list_menu_answer = manage_menu(username)
 
         # Quit to main menu
-        if list_menu_answer.strip().lower() == 'q':
+        if list_menu_answer.strip() == '1':
+            book_list_name = input("Enter the name of the book list you wish to create: \n")
+            
+            if not book_list_name:
+                print("Book list name cannot be empty. Please try again.")
+                continue
+
+            # Call function that calls stored procedure to create new book list
+            status_message = create_user_book_list(connection, username, book_list_name)
+
+            # Display the status message returned by the procedure
+            if status_message:
+                print(f"Result: {status_message}")
+            else:
+                    print("An error occurred while creating the book list.")
+        
+        elif list_menu_answer.strip() == '2':
+            get_user_book_lists(connection, username)
+        
+        elif list_menu_answer.strip().lower() == 'q':
             print("Returning to main menu...")
             break
 
@@ -370,3 +390,51 @@ def search_book_by_id(connection, book_id):
             return
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
+ 
+'''
+Helper funtion to create new user book list
+'''        
+def create_user_book_list(connection, user_name, book_list_name):
+    try:
+        with connection.cursor() as cursor:
+            print(f"Calling CreateUserBookList with username={user_name}, book_list_name={book_list_name}")
+            cursor.callproc('CreateUserBookList', (user_name, book_list_name))
+
+            cursor.execute('SELECT @status_message')
+            result = cursor.fetchone()
+
+            # Debug: Log the fetched result
+            print(f"Procedure result: {result}")
+
+            if result and 'status_message' in result:
+                return result['status_message']
+            else:
+                return "No status message returned."
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+        return None
+'''
+Helper function to retrieve and display a user's saved book lists
+'''
+def get_user_book_lists(connection, username):
+    try:
+        with connection.cursor() as cursor:
+            # Call the stored procedure
+            cursor.callproc('return_list_name_of_user', (username,))
+
+            # Fetch all results returned by the procedure
+            book_lists = cursor.fetchall()
+
+            # If not book lists found
+            if not book_lists:
+                print("No book lists found for the user.")
+                return
+
+            # Display the user's saved book lists
+            print(f"{username}'s Saved Book Lists: ")
+            for index, book_list in enumerate(book_lists, start=1):
+                print(f"{index}. {book_list['book_list_name']}")
+
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
