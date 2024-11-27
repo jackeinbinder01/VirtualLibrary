@@ -222,6 +222,7 @@ proc_block: BEGIN
         -- Create the sub-list
         INSERT INTO user_book_list (user_name, book_list_name)
         VALUES (input_user_name, input_sub_list_name);
+        
         SET sub_list_status = 'Sub-List Created';
     END IF;
 
@@ -319,53 +320,5 @@ DELIMITER ;
 CALL GetBookById(1);
 
 
-DELIMITER $$
-
-CREATE PROCEDURE RemoveBookFromUserList (
-    IN input_user_name VARCHAR(64),
-    IN input_book_list_name VARCHAR(64),
-    IN input_book_id INT,
-    OUT remove_status VARCHAR(32)
-)
-proc_block: BEGIN
-    -- Check if the user exists
-    IF NOT EXISTS (
-        SELECT 1 FROM user WHERE user_name = input_user_name
-    ) THEN
-        SET remove_status = 'User Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the book list exists for the user
-    IF NOT EXISTS (
-        SELECT 1
-        FROM user_book_list
-        WHERE user_name = input_user_name 
-          AND book_list_name = input_book_list_name
-    ) THEN
-        SET remove_status = 'Book List Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the book exists in the user's list
-    IF NOT EXISTS (
-        SELECT 1
-        FROM book_list_book blb
-        WHERE blb.book_list_name = input_book_list_name 
-          AND blb.book_id = input_book_id
-    ) THEN
-        SET remove_status = 'Book Not Found in List';
-        LEAVE proc_block;
-    END IF;
-
-    -- Delete the book from the list
-    DELETE FROM book_list_book
-    WHERE book_list_name = input_book_list_name
-      AND book_id = input_book_id;
-
-    SET remove_status = 'Book Removed from List';
-END $$
-
-DELIMITER ;
 
 
