@@ -3,7 +3,7 @@ USE virtual_library_db;
 
 
 DELIMITER $$
--- logs in to a user
+
 CREATE PROCEDURE LoginUser (
     IN i_username VARCHAR(64),
     IN i_password VARCHAR(64),
@@ -15,12 +15,12 @@ BEGIN
     -- Retrieve the stored password for the given username
     SELECT password INTO stored_password
     FROM user
-    WHERE user_name = input_username;
+    WHERE user_name = i_username;
 
     -- Check if the username exists and the password matches
     IF stored_password IS NULL THEN
         SET login_status = 'User Not Found';
-    ELSEIF stored_password = input_password THEN
+    ELSEIF stored_password = i_password THEN
         SET login_status = 'Login Successful';
     ELSE
         SET login_status = 'Invalid Password';
@@ -28,6 +28,9 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
+
 
 
 
@@ -225,5 +228,7 @@ BEGIN
 END $$
 
 DELIMITER ;
+
+
 
 

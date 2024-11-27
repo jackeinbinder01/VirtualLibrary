@@ -2,39 +2,24 @@ import model
 import pymysql
 
 
-def login_options(connection):
-    '''
-    ask user if they have an account
-    if no account make new one send data to DB
-    if not ask for username and password and ensure the DB has them.
-    '''
-    while True:
-        answer = input("enter a value based on the prompt below\n"
-                       "1. Login to an existing account"
-                       "\n2.Create a new account\nq to quit\n")
-        if answer.lower() == "q":
-            return False
-        if answer == "1":
-            while True:
-                if model.login_user(connection):
-                    print("login successful")
-                    return True
-                else:
-                    retry = input("Try again y/n")
-                    if retry.lower == 'n':
-                        return False
-                
-        if answer == "2":
-            while True:
-                if model.create_user(connection):
-                    print("account created, you have been automatically logged in")
-                    return True
-                else:
-                    retry = input("Try again y/n")
-                    if retry.lower == 'n':
-                        return False
-        else: 
-            print("invalid input please try again")  
+def main_menu(username):
+    print("welcome to the main menu!")
+    answer = input("would you like to search for books or manage your lists {username}"
+                   "\n1. for searching\n2. for managing\nq to quit")
+    return answer
+
+
+def search_menu(username):
+    print("welcome to the search menu!")
+    answer = input("1. if you would like to search for books by genre, publisher,"
+                " author name, book name, or series name\n2. to add a specific book"
+                " to a list\n3. to remove a specific book\n4. add/update a rating on a"
+                " book\nq to return to main menu")
+    return answer
+
+def manage_menu(username):
+    print("welcome to the management menu!")
+    answer = input("1. if you would like to ")
 
 def work():
     connection = model.connect_to_database()
@@ -43,18 +28,30 @@ def work():
         return
     try:
         while True:
-            if login_options(connection):
-                im_in = True
+            username = model.login_options(connection)
+            if username == False:
+                print("the connection was unsuccessful, quitting now")
+                return 
             else:
-                print("closing app")
-                return
+                break
     except Exception as e:
         print("error found")
-    
+        return
+
+    main_menu_answer = main_menu(username)
+    while True:
+        if main_menu_answer.strip() == "1":
+            pass
+
+        if main_menu_answer.strip() == "2":
+            pass
+        if main_menu_answer.strip().lower() == 'q':
+            return
+
 def main():
     work()
-    
-    
-    
+
+
+
 if __name__ == "__main__":
     main()
