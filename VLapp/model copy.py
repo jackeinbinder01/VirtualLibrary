@@ -300,7 +300,6 @@ def manage_lists_logic(connection, username):
     while True:
         list_menu_answer = manage_menu(username)
 
-        # Quit to main menu
         if list_menu_answer.strip() == '1':
             book_list_name = input("Enter the name of the book list you wish to create: \n")
             
@@ -319,15 +318,20 @@ def manage_lists_logic(connection, username):
         
         elif list_menu_answer.strip() == '2':
             print_user_book_lists(connection, username)
+<<<<<<< Updated upstream
+
+        # quit to main menu
+=======
         
+>>>>>>> Stashed changes
         elif list_menu_answer.strip().lower() == 'q':
             print("Returning to main menu...")
             break
 
         # Add more list management logic here as needed
-def grab_book_by_id(connection, operation_name):
+def grab_book_by_id(connection):
     while True:
-        book_id = input(f"What is the ID number of the book you are looking to {operation_name}: ")
+        book_id = input("What is the ID number of the book you are looking to find: ")
         book_title = search_book_by_id(connection, book_id)
         correct_book = input("Is this the correct book? y/n\n")
         if correct_book.lower().strip() == 'y':
@@ -342,7 +346,7 @@ def grab_book_by_id(connection, operation_name):
 def update_rating_logic(connection, username):
     correct_book_bool = False
     while not correct_book_bool:
-       book_id, book_title = grab_book_by_id(connection, "rate")
+       book_id, book_title = grab_book_by_id(connection)
        if book_title is not None or book_id is not None:
            correct_book_bool = True
     while True:
@@ -368,7 +372,7 @@ def rate_book(username, book_id, score, comment, connection):
 def add_book_by_id_logic(connection, username): 
     correct_book_bool = False
     while not correct_book_bool:
-       book_id, book_title = grab_book_by_id(connection, "add")
+       book_id, book_title = grab_book_by_id(connection)
        if book_title is not None or book_id is not None:
            correct_book_bool = True
     print_user_book_lists(connection, username)
@@ -376,30 +380,22 @@ def add_book_by_id_logic(connection, username):
     if list_name.strip().lower() == 'n':
         list_name = input("What is the name of the new list?\n")
         create_user_book_list(connection, username, list_name)
-    
-    try:
-        add_book = connection.cursor()
-        add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
-        connection.commit()
-        add_book.close()
-        print("Here is the list of books")
-        # TODO add the print of the list of books in the booklist.
-    except pymysql.MySQLError as e:
-        print(f"Database error: {e}")
+    else:
+        try:
+            add_book = connection.cursor()
+            add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
+            connection.commit()
+            add_book.close()
+            print("Here is the list of books")
+            # TODO add the print of the list of books in the booklist.
+        except pymysql.MySQLError as e:
+            print(f"Database error: {e}")
     
 
 
-def remove_book_by_id_logic(connection, username): # TODO
-    book_id, book_title = grab_book_by_id(connection, "delete")
-    print_user_book_lists(connection, username)
-    list_name = input("choose a list from above (case sensitive)")
-    try:
-        remove_book = connection.cursor()
-        remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id, "@remove_status"))
-        connection.commit()
-        remove_book.close()
-    except pymysql.MySQLError as e:
-        print(f"Database error: {e}")    
+def remove_book_by_id_logic(connection): # TODO
+    # Implement logic for removing a book by its ID
+    pass
 
 def search_book_by_id(connection, book_id):
     try:
@@ -436,7 +432,7 @@ def create_user_book_list(connection, user_name, book_list_name):
             result = cursor.fetchone()
 
             # Debug: Log the fetched result
-            # print(f"Procedure result: {result}")
+            print(f"Procedure result: {result}")
 
             if result and 'status_message' in result:
                 return result['status_message']
@@ -462,11 +458,56 @@ def print_user_book_lists(connection, username):
                 print("No book lists found for the user.")
                 return
 
-            # Display the user's saved book lists
-            print(f"{username}'s Saved Book Lists: ")
-            for index, book_list in enumerate(book_lists, start=1):
-                print(f"{index}. {book_list['book_list_name']}")
+            while True:
+                # Display the user's saved book lists
+                print(f"{username}'s Saved Book Lists: ")
+                for index, book_list in enumerate(book_lists, start=1):
+                    print(f"{index}. {book_list['book_list_name']}")
 
+                # add option to return back to management menu
+                print(f"{len(book_lists) + 1}. Return to Management Menu")
+
+                # Prompt user to select a book list
+                try:
+                    selected_index = int(input("\nEnter the number of the book list you want to view: "))
+
+                    # if user selects option to return to management menu
+                    if selected_index == len(book_lists) + 1:
+                        return
+
+                    # validate selected index
+                    if 1 <= selected_index <= len(book_lists):
+                        selected_list = book_lists[selected_index - 1]['book_list_name']
+
+                        fetch_books_in_list(connection, selected_list)
+
+                    else:
+                        print("Invalid selection. Please choose a valid number.")
+                except ValueError:
+                    print("Invalid input. Please enter a number.")
+
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+
+
+'''
+Helper function to call procedure to retrieve books from book list
+'''
+def fetch_books_in_list(connection, book_list_name):
+    try:
+        with connection.cursor() as cursor:
+            # Call stored procedure
+            cursor.callproc('fetch_books_in_list', (book_list_name,))
+
+            # Fetch all results returned by the procedure
+            books = cursor.fetchall()
+
+            # Display books using the print_books helper function
+            if books:
+                print_books(books)
+            else:
+                print(f"No books found in the book list '{book_list_name}'.")
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
