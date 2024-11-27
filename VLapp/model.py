@@ -300,7 +300,6 @@ def manage_lists_logic(connection, username):
     while True:
         list_menu_answer = manage_menu(username)
 
-        # Quit to main menu
         if list_menu_answer.strip() == '1':
             book_list_name = input("Enter the name of the book list you wish to create: \n")
             
@@ -318,8 +317,9 @@ def manage_lists_logic(connection, username):
                     print("An error occurred while creating the book list.")
         
         elif list_menu_answer.strip() == '2':
-            get_user_book_lists(connection, username)
-        
+            print_user_book_lists(connection, username)
+
+        # quit to main menu
         elif list_menu_answer.strip().lower() == 'q':
             print("Returning to main menu...")
             break
@@ -416,7 +416,7 @@ def create_user_book_list(connection, user_name, book_list_name):
 '''
 Helper function to retrieve and display a user's saved book lists
 '''
-def get_user_book_lists(connection, username):
+def print_user_book_lists(connection, username):
     try:
         with connection.cursor() as cursor:
             # Call the stored procedure
@@ -430,11 +430,56 @@ def get_user_book_lists(connection, username):
                 print("No book lists found for the user.")
                 return
 
-            # Display the user's saved book lists
-            print(f"{username}'s Saved Book Lists: ")
-            for index, book_list in enumerate(book_lists, start=1):
-                print(f"{index}. {book_list['book_list_name']}")
+            while True:
+                # Display the user's saved book lists
+                print(f"{username}'s Saved Book Lists: ")
+                for index, book_list in enumerate(book_lists, start=1):
+                    print(f"{index}. {book_list['book_list_name']}")
 
+                # add option to return back to management menu
+                print(f"{len(book_lists) + 1}. Return to Management Menu")
+
+                # Prompt user to select a book list
+                try:
+                    selected_index = int(input("\nEnter the number of the book list you want to view: "))
+
+                    # if user selects option to return to management menu
+                    if selected_index == len(book_lists) + 1:
+                        return
+
+                    # validate selected index
+                    if 1 <= selected_index <= len(book_lists):
+                        selected_list = book_lists[selected_index - 1]['book_list_name']
+
+                        fetch_books_in_list(connection, selected_list)
+
+                    else:
+                        print("Invalid selection. Please choose a valid number.")
+                except ValueError:
+                    print("Invalid input. Please enter a number.")
+
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+
+
+'''
+Helper function to call procedure to retrieve books from book list
+'''
+def fetch_books_in_list(connection, book_list_name):
+    try:
+        with connection.cursor() as cursor:
+            # Call stored procedure
+            cursor.callproc('fetch_books_in_list', (book_list_name,))
+
+            # Fetch all results returned by the procedure
+            books = cursor.fetchall()
+
+            # Display books using the print_books helper function
+            if books:
+                print_books(books)
+            else:
+                print(f"No books found in the book list '{book_list_name}'.")
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
