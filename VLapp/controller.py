@@ -94,9 +94,6 @@ def get_user_book_lists(connection, username):
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['book_list_name']}")
 
-            while True:
-                try:
-                    selected_index = int(input("Enter the number of the book list you wish to view"))
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
