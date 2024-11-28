@@ -21,6 +21,7 @@ def work():
         print("error found")
         return
     model.application_logic(connection, username)
+    connection.commit()
         
 
 def main():
