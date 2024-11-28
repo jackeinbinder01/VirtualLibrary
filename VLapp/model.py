@@ -1,6 +1,7 @@
 import pymysql
 import datetime
 import csv
+from tabulate import tabulate
 
 
 def connect_to_database():
@@ -137,10 +138,10 @@ def print_books(book_list):
                 book["book_id"] or "N/A",
                 book["book_title"] or "N/A",
                 date_str,
-                book["genreName"] or "N/A",
-                book["publisherName"] or "N/A",
-                book["authorName"] or "N/A",
-                book["seriesName"] or "N/A"
+                book["genre_name"] or "N/A",
+                book["publisher_name"] or "N/A",
+                book["author_name"] or "N/A",
+                book["series_name"] or "N/A"
             ))
     else:
         print("No books found.")
@@ -502,7 +503,7 @@ def print_user_book_lists(connection, username):
                 # Display the user's saved book lists
                 print(f"{username}'s Saved Book Lists: ")
                 for index, book_list in enumerate(book_lists, start=1):
-                    print(f"{index}. {book_list['book_list_name']}")
+                    print(f"{index}. {book_list['list_name']}")
 
                 # add option to return back to management menu
                 print(f"{len(book_lists) + 1}. Return to Management Menu")
@@ -517,7 +518,7 @@ def print_user_book_lists(connection, username):
 
                     # validate selected index
                     if 1 <= selected_index <= len(book_lists):
-                        selected_list = book_lists[selected_index - 1]['book_list_name']
+                        selected_list = book_lists[selected_index - 1]['list_name']
 
                         fetch_books_in_list(connection, selected_list)
 
@@ -545,7 +546,7 @@ def fetch_books_in_list(connection, book_list_name):
 
             # Display books using the print_books helper function
             if books:
-                print_books(books)
+                print_books_tabular(books)
             else:
                 print(f"No books found in the book list '{book_list_name}'.")
 
@@ -633,3 +634,13 @@ def export_book_list_to_csv(book_list_name, books):
         print(f"\nBook list successfully exported to {file_name}")
     except Exception as e:
         print(f"An error occured while exporting the book list: {e}")
+
+'''
+Helper function that prints books in tabular format
+'''
+def print_books_tabular(book_list):
+    # Define headers
+    headers = ["Book ID", "Book Title", "Release Date", "Genres", "Author", "Publisher", "Series", "Rating", "Comments"]
+
+    # Print table using tabulate
+    print(tabulate(book_list, headers=headers, tablefmt="fancy_grid"))
