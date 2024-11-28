@@ -38,6 +38,48 @@ DELIMITER ;
 
 -- Test cases:
 CALL return_book_list_items('jack', 'favorites');
+
+/*
+Second pass at retrieving books from a specific book list
+*/
+DELIMITER $$
+
+CREATE PROCEDURE fetch_books_in_list(
+    IN book_list_name_p VARCHAR(64)
+)
+BEGIN
+    SELECT 
+        b.book_id,
+        b.book_title,
+        b.release_date,
+        GROUP_CONCAT(DISTINCT g.genre_name) AS genres,
+        GROUP_CONCAT(DISTINCT a.author_name) AS authors,
+        GROUP_CONCAT(DISTINCT p.publisher_name) AS publisher_names, 
+        GROUP_CONCAT(DISTINCT s.series_name) AS series_name       
+    FROM book_list_book blb
+    JOIN book b ON blb.book_id = b.book_id
+    LEFT JOIN book_genre bg ON b.book_id = bg.book_id
+    LEFT JOIN genre g ON bg.genre_name = g.genre_name
+    LEFT JOIN book_author ba ON b.book_id = ba.book_id
+    LEFT JOIN author a ON ba.author_id = a.author_id
+    LEFT JOIN book_publisher bp ON b.book_id = bp.book_id
+    LEFT JOIN publisher p ON bp.publisher_id = p.publisher_id
+    LEFT JOIN book_series bs ON b.book_id = bs.book_id
+    LEFT JOIN series s ON bs.series_id = s.series_id
+    WHERE blb.book_list_name = book_list_name_p
+    GROUP BY b.book_id, b.book_title, b.release_date
+    ORDER BY b.book_title;
+END $$
+
+DELIMITER ;
+
+SELECT @@sql_mode;
+
+-- Test case:
+CALL fetch_books_in_list('test_list6');
+
+
+
 /*
 Procedure that creates a new user book list
 */
