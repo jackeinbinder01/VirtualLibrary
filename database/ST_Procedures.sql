@@ -317,7 +317,40 @@ END $$
 
 DELIMITER ;
 
-CALL GetBookById(1);
+DELIMITER $$
+
+CREATE PROCEDURE RemoveBookFromUserList (
+    IN input_user_name VARCHAR(64),
+    IN input_book_list_name VARCHAR(64),
+    IN input_book_id INT,
+    OUT remove_status VARCHAR(32)
+)
+BEGIN
+    -- Check if the book exists in the user's list
+    IF EXISTS (
+        SELECT 1 
+        FROM book_list_book blb
+        JOIN user_book_list ubl ON blb.book_list_name = ubl.book_list_name
+        WHERE ubl.user_name = input_user_name
+          AND ubl.book_list_name = input_book_list_name
+          AND blb.book_id = input_book_id
+    ) THEN
+        -- Remove the book from the list
+        DELETE blb
+        FROM book_list_book blb
+        JOIN user_book_list ubl ON blb.book_list_name = ubl.book_list_name
+        WHERE ubl.user_name = input_user_name
+          AND ubl.book_list_name = input_book_list_name
+          AND blb.book_id = input_book_id;
+
+        SET remove_status = 'Book Removed Successfully from List';
+    ELSE
+        -- If the book doesn't exist in the specified list, set status
+        SET remove_status = 'Book Not Found in Specified List';
+    END IF;
+END $$
+
+DELIMITER ;
 
 
 
