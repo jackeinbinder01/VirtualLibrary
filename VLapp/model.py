@@ -127,13 +127,13 @@ def login_user(connection):
 def print_books(book_list):
      # Check if the list is not empty and print books
     if book_list:
-        print("{:<10} {:<75} {:<15} {:<15} {:<15} {:<15} {:<15}".format(
+        print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
             "Book ID", "Book Title", "Release Date", "Genre", "Publisher", "Author", "Series"
         ))
         for book in book_list:
             # Convert release_date to a string for display
             date_str = book["release_date"].strftime('%Y-%m-%d') if book["release_date"] else "N/A"
-            print("{:<10} {:<75} {:<15} {:<15} {:<15} {:<15} {:<15}".format(
+            print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
                 book["book_id"] or "N/A",
                 book["book_title"] or "N/A",
                 date_str,
@@ -202,13 +202,14 @@ def drop_current_list(connection):
         # Catch any unexpected exceptions
         print(f"Unexpected error: {e}")
         
-def get_search_param():
+def get_search_param(username):
     print("please fill out the questions below, no response is acceptable")
     search_param = [ input("What is the name of the genre: "),
     input("the book name: "),
     input("the last name of the publisher: "),
     input("The author name: "),
-    input("The series name: ")
+    input("The series name: "), 
+    username
     ]
     return search_param
 
@@ -265,7 +266,7 @@ def search_logic(connection, username):
             break
 
         if search_menu_answer.strip() == '1':  # Search for books
-            search_books(connection)
+            search_books(connection, username)
 
         elif search_menu_answer.strip() == '2':  # Add by book ID
             add_book_by_id_logic(connection, username)
@@ -280,16 +281,16 @@ def search_logic(connection, username):
             print("Invalid input. Please try again.")
 
 
-def search_books(connection):
+def search_books(connection, username):
     while True:
-        search_param = get_search_param()
+        search_param = get_search_param(username)
         get_list(search_param, connection)
 
         # Refine search loop
         while True:
             user_continue = input("Would you like to further refine the list (y/n): ").strip().lower()
             if user_continue == "y":
-                search_param = get_search_param()
+                search_param = get_search_param(username)
                 filter_current_list(search_param, connection)
             elif user_continue == "n":
                 drop_current_list(connection)
