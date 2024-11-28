@@ -53,37 +53,40 @@ DROP PROCEDURE IF EXISTS GetBooksByFilters;
 DELIMITER $$
 
 CREATE PROCEDURE GetBooksByFilters (
-    IN genreName VARCHAR(64),
-    IN bookName VARCHAR(256),
-    IN publisherName VARCHAR(128),
-    IN authorName VARCHAR(128),
-    IN seriesName VARCHAR(128)
+    IN genre_name_p VARCHAR(64),
+    IN book_title_p VARCHAR(256),
+    IN publisher_name_p VARCHAR(128),
+    IN author_name_p VARCHAR(128),
+    IN series_name_p VARCHAR(128)
 )
 BEGIN
-    -- Create the FilteredBookList table if it doesn't exist
-    CREATE TABLE IF NOT EXISTS FilteredBookList (
+    -- Create the filtered_book_list table if it doesn't exist
+    CREATE TABLE IF NOT EXISTS filtered_book_list (
         book_id INT,
         book_title VARCHAR(256),
         release_date DATE,
-        genreName VARCHAR(64),
-        publisherName VARCHAR(128),
-        authorName VARCHAR(128),
-        seriesName VARCHAR(128)
+        genre_name VARCHAR(64),
+        publisher_name VARCHAR(128),
+        author_name VARCHAR(128),
+        series_name VARCHAR(128)
+
+        , CONSTRAINT filtered_book_list_pk
+            PRIMARY KEY(book_id)
     );
 
-    -- Clear existing data in FilteredBookList
-    TRUNCATE TABLE FilteredBookList;
+    -- Clear existing data in filtered_book_list
+    TRUNCATE TABLE filtered_book_list;
 
-    -- Populate FilteredBookList with initial filters
-    INSERT INTO FilteredBookList (book_id, book_title, release_date, genreName, publisherName, authorName, seriesName)
+    -- Populate filtered_book_list with initial filters
+    INSERT INTO filtered_book_list (book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name)
     SELECT DISTINCT
         b.book_id,
         b.book_title,
         b.release_date,
-        bg.genre_name AS genreName,
-        p.publisher_name AS publisherName,
-        a.author_name AS authorName,
-        s.series_name AS seriesName
+        bg.genre_name,
+        p.publisher_name,
+        a.author_name,
+        s.series_name
     FROM book b
     LEFT JOIN book_genre bg ON b.book_id = bg.book_id
     LEFT JOIN publisher p ON b.publisher_id = p.publisher_id
@@ -91,14 +94,14 @@ BEGIN
     LEFT JOIN book_series bs ON b.book_id = bs.book_id
     LEFT JOIN series s ON bs.series_id = s.series_id
     WHERE
-        (genreName IS NULL OR bg.genre_name = genreName) AND
-        (bookName IS NULL OR b.book_title = bookName) AND
-        (publisherName IS NULL OR p.publisher_name = publisherName) AND
-        (authorName IS NULL OR a.author_name = authorName) AND
-        (seriesName IS NULL OR s.series_name = seriesName);
+        (genre_name_p IS NULL OR bg.genre_name = genre_name_p) AND
+        (book_title_p IS NULL OR b.book_title = book_title_p) AND
+        (publisher_name_p IS NULL OR p.publisher_name = publisher_name_p) AND
+        (author_name_p IS NULL OR a.author_name = author_name_p) AND
+        (series_name_p IS NULL OR s.series_name = series_name_p);
 
-    -- Return the contents of FilteredBookList
-    SELECT * FROM FilteredBookList;
+    -- Return the contents of filtered_book_list
+    SELECT * FROM filtered_book_list;
 END $$
 
 DELIMITER ;
@@ -107,45 +110,45 @@ DROP PROCEDURE IF EXISTS FilterOnFilteredList;
 DELIMITER $$
 
 CREATE PROCEDURE FilterOnFilteredList (
-    IN genreName VARCHAR(64),
-    IN bookName VARCHAR(256),
-    IN publisherName VARCHAR(128),
-    IN authorName VARCHAR(128),
-    IN seriesName VARCHAR(128)
+    IN genre_name_p VARCHAR(64),
+    IN book_title_p VARCHAR(256),
+    IN publisher_name_p VARCHAR(128),
+    IN author_name_p VARCHAR(128),
+    IN series_name_p VARCHAR(128)
 )
 BEGIN
     -- Ensure FilteredBookList exists
-    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'FilteredBookList' AND table_schema = DATABASE()) THEN
-        SIGNAL SQLSTATE '02000' SET MESSAGE_TEXT = 'FilteredBookList does not exist.';
+    IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'filtered_book_list' AND table_schema = DATABASE()) THEN
+        SIGNAL SQLSTATE '02000' SET MESSAGE_TEXT = 'filtered_book_list does not exist.';
     END IF;
 
     -- Create a temporary table to hold filtered results
-    CREATE TEMPORARY TABLE TempFilteredList AS
+    CREATE TEMPORARY TABLE temp_filtered_list AS
     SELECT DISTINCT
         book_id,
-        book_title,
+        genre_name,
         release_date,
-        genreName,
-        publisherName,
-        authorName,
-        seriesName
-    FROM FilteredBookList
+        genre_name,
+        publisher_name,
+        author_name,
+        series_name
+    FROM filtered_book_list
     WHERE
-        (genreName IS NULL OR genreName = genreName) AND
-        (bookName IS NULL OR book_title = bookName) AND
-        (publisherName IS NULL OR publisherName = publisherName) AND
-        (authorName IS NULL OR authorName = authorName) AND
-        (seriesName IS NULL OR seriesName = seriesName);
+        (genre_name_p IS NULL OR genre_name = genre_name_p) AND
+        (book_title_p IS NULL OR book_title = book_title_p) AND
+        (publisher_name_p IS NULL OR publisher_name = publisher_name_p) AND
+        (author_name_p IS NULL OR author_name = author_name_p) AND
+        (series_name_p IS NULL OR series_name = series_name_p);
 
-    -- Replace the FilteredBookList with the filtered results
-    TRUNCATE TABLE FilteredBookList;
-    INSERT INTO FilteredBookList SELECT * FROM TempFilteredList;
+    -- Replace the filtered_book_list with the filtered results
+    TRUNCATE TABLE filtered_book_list;
+    INSERT INTO filtered_book_list SELECT * FROM temp_filtered_list;
 
     -- Drop the temporary table
-    DROP TEMPORARY TABLE TempFilteredList;
+    DROP TEMPORARY TABLE temp_filtered_list;
 
-    -- Return the updated FilteredBookList
-    SELECT * FROM FilteredBookList;
+    -- Return the updated filtered_book_list
+    SELECT * FROM filtered_book_list;
 END $$
 
 DELIMITER ;
@@ -297,7 +300,7 @@ DELIMITER $$
 CREATE PROCEDURE DropFilteredList ()
 BEGIN
     -- Drop the FilteredBookList table
-    DROP TABLE IF EXISTS FilteredBookList;
+    DROP TABLE IF EXISTS filtered_book_list;
 END $$
 
 DELIMITER ;

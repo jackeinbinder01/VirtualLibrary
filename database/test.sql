@@ -24,6 +24,8 @@ SELECT * FROM book_rating;
 
 SELECT * FROM link;
 
+SELECT * FROM filtered_book_list;
+
 
 
 SELECT DISTINCT
