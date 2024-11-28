@@ -20,8 +20,7 @@ def work():
     except Exception as e:
         print("error found")
         return
-    while True:
-        model.application_logic(connection, username)
+    model.application_logic(connection, username)
         
 
 def main():

@@ -30,7 +30,7 @@ def login_options(connection):
                        "1. Login to an existing account"
                        "\n2. Create a new account\nq to quit\n")
         if answer.strip().lower() == "q":
-            break
+            return False
         if answer == "1":
             while True:
                 username = login_user(connection)
@@ -208,8 +208,7 @@ def get_search_param(username):
     input("the book name: "),
     input("the last name of the publisher: "),
     input("The author name: "),
-    input("The series name: "), 
-    username
+    input("The series name: ")
     ]
     return search_param
 
@@ -236,14 +235,16 @@ def manage_menu(username):
     return answer
 
 def application_logic(connection, username):
-    while True: 
+    leave = True
+    while leave: 
         connection.commit()
         main_menu_answer = main_menu(username)
 
         # Quit from main menu
         if main_menu_answer.strip().lower() == 'q':
             print("Exiting program. Goodbye!")
-            return
+            leave = False
+            break
 
         if main_menu_answer.strip() == "1":  # Search Menu
             search_logic(connection, username)
@@ -339,6 +340,8 @@ def update_rating_logic(connection, username):
     correct_book_bool = False
     while not correct_book_bool:
         book_id, book_title = grab_book_by_id(connection, "rate")
+        if book_title is not None and book_id is not None:
+            correct_book_bool = True
     while True:
         score = input("Enter a number (1 - 5):\n").strip()
         if  0 < int(score) < 6:
@@ -365,7 +368,7 @@ def grab_book_by_id(connection, operation):
 def rate_book(username, book_id, score, comment, connection):
     try:
         book_rating = connection.cursor()
-        book_rating.callproc("AddOrUpdateBookRating", (username, book_id, score, comment))
+        book_rating.callproc("AddOrUpdateBookRating", (username, book_id, comment, score))
         connection.commit()
         book_rating.close()
         print("Rating successful\nReturning to search menu")
@@ -376,7 +379,7 @@ def add_book_by_id_logic(connection, username):
     correct_book_bool = False
     while not correct_book_bool:
        book_id, book_title = grab_book_by_id(connection, "add")
-       if book_title is not None or book_id is not None:
+       if book_title is not None and book_id is not None:
            correct_book_bool = True
     print_list_names_of_user(connection, username)
     list_name = input("choose a list from above (case sensitive) or type 'n' to make a new list\n")
