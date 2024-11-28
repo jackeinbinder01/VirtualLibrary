@@ -576,7 +576,7 @@ def export_user_book_list(connection, username):
             # Display the user's saved book lists
             print(f"\n{username}'s Saved Book Lists:")
             for index, book_list in enumerate(book_lists, start=1):
-                print(f"{index}. {book_list['book_list_name']}")
+                print(f"{index}. {book_list['list_name']}")
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
