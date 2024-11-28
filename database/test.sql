@@ -24,3 +24,4 @@ SELECT * FROM book_rating;
 
 SELECT * FROM link;
 
+
