@@ -236,6 +236,7 @@ def manage_menu(username):
 
 def application_logic(connection, username):
     while True: 
+        connection.commit()
         main_menu_answer = main_menu(username)
 
         # Quit from main menu
@@ -255,6 +256,7 @@ def application_logic(connection, username):
 
 def search_logic(connection, username):
     while True:
+        connection.commit()
         search_menu_answer = search_menu(username)
 
         # Quit to main menu
@@ -299,6 +301,7 @@ def search_books(connection):
 
 def manage_lists_logic(connection, username):
     while True:
+        connection.commit()
         list_menu_answer = manage_menu(username)
 
         if list_menu_answer.strip() == '1':
@@ -385,23 +388,24 @@ def add_book_by_id_logic(connection, username):
         add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
         connection.commit()
         add_book.close()
-        print(f"Here is the list of books in {list_name}")
+        print(f"Here is updated the list of books in {list_name}")
         fetch_books_in_list(connection, list_name)
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username): # TODO
-    book_id, book_title = grab_book_by_id(connection, "delete")
     print_list_names_of_user(connection, username)
-    list_name = input("choose a list from above (case sensitive)")
+    list_name = input("choose a list from above (case sensitive)\n")
+    print(f"Here is the list of books in {list_name}")
+    fetch_books_in_list(connection, list_name)
     try:
         remove_book = connection.cursor()
+        book_id, book_title = grab_book_by_id(connection, "delete")
         remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id, "@remove_status"))
         connection.commit()
         remove_book.close()
-        print(f"Here is the list of books in {list_name}")
-        fetch_books_in_list(connection, list_name)
+
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
 
@@ -469,7 +473,7 @@ def print_list_names_of_user(connection,username):
                 print(f"{username}'s Saved Book Lists: ")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['book_list_name']}")
-                    return
+                return
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         
