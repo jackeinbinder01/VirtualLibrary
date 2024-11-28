@@ -214,40 +214,7 @@ BEGIN
     END IF;
 END $$
 
--- Remove Book from User List
-CREATE PROCEDURE RemoveBookFromUserList (
-    IN username_p VARCHAR(64),
-    IN bookListName_p VARCHAR(64),
-    IN bookId_p INT,
-    OUT removeStatus_p VARCHAR(32)
-)
-BEGIN
-    -- Check if the book exists in the user's list
-    IF EXISTS (
-        SELECT 1 
-        FROM book_list_book blb
-        JOIN user_book_list ubl ON blb.book_list_name = ubl.book_list_name
-        WHERE ubl.user_name = username_p
-          AND ubl.book_list_name = bookListName_p
-          AND blb.book_id = bookId_p
-    ) THEN
-        -- Remove the book from the list
-        DELETE blb
-        FROM book_list_book blb
-        JOIN user_book_list ubl ON blb.book_list_name = ubl.book_list_name
-        WHERE ubl.user_name = username_p
-          AND ubl.book_list_name = bookListName_p
-          AND blb.book_id = bookId_p;
-
-        SET removeStatus_p = 'Book Removed Successfully from List';
-    ELSE
-        -- If the book doesn't exist in the specified list, set status
-        SET removeStatus_p = 'Book Not Found in Specified List';
-    END IF;
-END $$
-
 DELIMITER ;
-
 DELIMITER $$
 
 CREATE PROCEDURE CreateSubList (
@@ -283,60 +250,7 @@ END $$
 
 DELIMITER ;
 
-DELIMITER $$
 
-CREATE PROCEDURE AddBookToSubList (
-    IN username_p VARCHAR(64),
-    IN subListName_p VARCHAR(64),
-    IN bookId_p INT,
-    OUT bookAddStatus_p VARCHAR(32)
-)
-proc_block: BEGIN
-    -- Check if the user exists
-    IF NOT EXISTS (
-        SELECT 1 FROM user WHERE user_name = username_p
-    ) THEN
-        SET bookAddStatus_p = 'User Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the sub-list exists for the user
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM user_book_list 
-        WHERE user_name = username_p 
-          AND book_list_name = subListName_p
-    ) THEN
-        SET bookAddStatus_p = 'Sub-List Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the book exists
-    IF NOT EXISTS (
-        SELECT 1 FROM book WHERE book_id = bookId_p
-    ) THEN
-        SET bookAddStatus_p = 'Book Not Found';
-        LEAVE proc_block;
-    END IF;
-
-    -- Check if the book is already in the sub-list
-    IF EXISTS (
-        SELECT 1
-        FROM book_list_book blb
-        WHERE blb.book_list_name = subListName_p
-          AND blb.book_id = bookId_p
-    ) THEN
-        SET bookAddStatus_p = 'Book Already in Sub-List';
-    ELSE
-        -- Add the book to the sub-list
-        INSERT INTO book_list_book (book_list_name, book_id)
-        VALUES (subListName_p, bookId_p);
-
-        SET bookAddStatus_p = 'Book Added to Sub-List';
-    END IF;
-END $$
-
-DELIMITER ;
 
 
 
