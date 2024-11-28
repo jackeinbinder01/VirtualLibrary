@@ -41,8 +41,8 @@ BEGIN
         VALUES (username_p, password_p);
     END IF;
 END $$
+DELIMITER $$
 
--- Get Books By Filters
 CREATE PROCEDURE GetBooksByFilters (
     IN genreName_p VARCHAR(64),
     IN bookName_p VARCHAR(256),
@@ -92,6 +92,11 @@ BEGIN
     -- Return the contents of FilteredBookList
     SELECT * FROM FilteredBookList;
 END $$
+
+DELIMITER ;
+
+CALL GetBooksByFilters(NULL, NULL, NULL, NULL, NULL);
+DELIMITER $$
 
 -- Filter on Filtered List
 CREATE PROCEDURE FilterOnFilteredList (
