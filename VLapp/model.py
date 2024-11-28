@@ -474,7 +474,7 @@ def print_list_names_of_user(connection,username):
                 # Display the user's saved book lists
                 print(f"{username}'s Saved Book Lists: ")
                 for index, book_list in enumerate(book_lists, start=1):
-                    print(f"{index}. {book_list['book_list_name']}")
+                    print(f"{index}. {book_list['list_name']}")
                 return
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
