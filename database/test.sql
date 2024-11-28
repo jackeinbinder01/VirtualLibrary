@@ -28,6 +28,7 @@ SELECT * FROM filtered_book_list;
 
 
 
+
 SELECT DISTINCT
         b.book_id,
         b.book_title,
