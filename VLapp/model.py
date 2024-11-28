@@ -1,5 +1,6 @@
 import pymysql
 import datetime
+import csv
 
 
 def connect_to_database():
@@ -230,7 +231,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. return to main menu\n") # TODO
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. export book list to csv file\nq. return to main menu\n") # TODO
     return answer
 
 def application_logic(connection, username):
@@ -318,6 +319,9 @@ def manage_lists_logic(connection, username):
         
         elif list_menu_answer.strip() == '2':
             print_user_book_lists(connection, username)
+
+        elif list_menu_answer.strip() == '3':
+            export_user_book_list(connection, username)
 
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'q':
@@ -481,5 +485,87 @@ def fetch_books_in_list(connection, book_list_name):
             else:
                 print(f"No books found in the book list '{book_list_name}'.")
 
+            return books
+
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
+        return []
+
+'''
+Helper function to export book list to a csv file.
+'''
+def export_user_book_list(connection, username):
+    try:
+        with connection.cursor() as cursor:
+            # call stored procedure to fetch book lists
+            cursor.callproc('return_list_name_of_user', (username,))
+
+            # Fetch all results returned by the procedure
+            book_lists = cursor.fetchall()
+
+            # If no book lists found
+            if not book_lists:
+                print("No book lists found for the user.")
+                return
+
+            # Display the user's saved book lists
+            print(f"\n{username}'s Saved Book Lists:")
+            for index, book_list in enumerate(book_lists, start=1):
+                print(f"{index}. {book_list['book_list_name']}")
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+        return
+
+    # Prompt the user to select a book list
+    try:
+        selected_index = int(input("\nEnter the number of the book list you want to export: "))
+
+        # Validate selected index
+        if 1 <= selected_index <= len(book_lists):
+            selected_list = book_lists[selected_index - 1]['book_list_name']
+
+            # Fetch books in the selected list
+            books = fetch_books_in_list(connection, selected_list)
+
+            # Export the book list to a CSV file
+            if books:
+                export_book_list_to_csv(selected_list, books)
+            else:
+                print(f"No books found in the book list '{selected_list}'.")
+        else:
+            print("Invalid selection. Please choose a valid number.")
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+
+'''
+Helper function that exports a given book list to a CSV file
+'''
+def export_book_list_to_csv(book_list_name, books):
+    try:
+        file_name = f"{book_list_name.replace(' ', '_')}_book_list.csv"
+
+        # Write book data to the CSV file
+        with open(file_name, mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            #write header row
+            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "series"])
+
+            # Write book data rows
+            for book in books:
+                writer.writerow([
+                    book.get("book_id", "N/A"),
+                    book.get("book_title", "N/A"),
+                    book.get("release_date", "N/A"),
+                    book.get("genres", "N/A"),
+                    book.get("authors", "N/A"),
+                    book.get("publisher_name", "N/A"),
+                    book.get("series_name", "N/A"),
+                ])
+
+        print(f"\nBook list successfully exported to {file_name}")
+    except Exception as e:
+        print(f"An error occured while exporting the book list: {e}")
