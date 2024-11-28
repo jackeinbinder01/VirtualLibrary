@@ -1,6 +1,0 @@
-
-
-def start():
-    ## start
-    pass
-

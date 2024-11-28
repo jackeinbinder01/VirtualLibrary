@@ -2,17 +2,6 @@ DROP DATABASE IF EXISTS virtual_library_db;
 CREATE DATABASE IF NOT EXISTS virtual_library_db;
 USE virtual_library_db;
 
-CREATE TABLE book
-(
-    book_id INT AUTO_INCREMENT PRIMARY KEY
-    , book_title VARCHAR(256) NOT NULL
-    , description TEXT
-    , release_date DATE NOT NULL
-
-    , CONSTRAINT book_ak
-        UNIQUE(book_title, release_date)
-);
-
 CREATE TABLE author
 (
     author_id INT AUTO_INCREMENT PRIMARY KEY
@@ -24,25 +13,6 @@ CREATE TABLE author
 
     , CONSTRAINT author_ak_email
         UNIQUE(email_address)
-);
-
-CREATE TABLE book_author
-(
-    book_id INT NOT NULL
-    , author_id INT NOT NULL
-
-    , CONSTRAINT book_author_pk
-        PRIMARY KEY(book_id, author_id)
-
-    , CONSTRAINT book_author_fk_book
-        FOREIGN KEY (book_id) REFERENCES book (book_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-
-    , CONSTRAINT book_author_fk_author
-        FOREIGN KEY (author_id) REFERENCES author (author_id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
 );
 
 CREATE TABLE publisher
@@ -57,20 +27,24 @@ CREATE TABLE publisher
             UNIQUE(email_address)
 );
 
-CREATE TABLE book_publisher
+CREATE TABLE book
 (
-    book_id INT NOT NULL
+    book_id INT AUTO_INCREMENT PRIMARY KEY
+    , book_title VARCHAR(256) NOT NULL
+    , description TEXT
+    , author_id INT # authors can be null, reflect in uml
     , publisher_id INT NOT NULL
+    , release_date DATE NOT NULL
 
-    , CONSTRAINT book_publisher_pk
-        PRIMARY KEY(book_id, publisher_id)
+    , CONSTRAINT book_ak
+        UNIQUE(book_title, release_date)
 
-    , CONSTRAINT book_publisher_fk_book
-        FOREIGN KEY (book_id) REFERENCES book (book_id)
-        ON DELETE CASCADE
+    , CONSTRAINT book_fk_author
+        FOREIGN KEY (author_id) REFERENCES author (author_id)
+        ON DELETE RESTRICT
         ON UPDATE CASCADE
 
-    , CONSTRAINT book_publisher_fk_publisher
+    , CONSTRAINT book_fk_publisher
         FOREIGN KEY (publisher_id) REFERENCES publisher (publisher_id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE
@@ -104,44 +78,27 @@ CREATE TABLE book_series
         ON UPDATE CASCADE
 );
 
-CREATE TABLE format
+CREATE TABLE link
 (
-    format_id INT AUTO_INCREMENT PRIMARY KEY
-    , format_type ENUM('Hard Cover', 'Paper Back', 'PDF', 'eBook', 'Audio Book') NOT NULL
-    , url VARCHAR(512) NOT NULL
+    url VARCHAR(512) PRIMARY KEY
+    , format_type ENUM('Hardcover', 'Paperback', 'PDF', 'eBook', 'Audiobook') NOT NULL
+    , book_id INT NOT NULL
 
-    , CONSTRAINT format_ak
-        UNIQUE(url)
-);
-
-CREATE TABLE book_format
-(
-    book_id INT NOT NULL
-    , format_id INT NOT NULL
-
-    , CONSTRAINT book_format_pk
-        PRIMARY KEY(book_id, format_id)
-
-    , CONSTRAINT book_format_fk_book
+    , CONSTRAINT link_fk_book
         FOREIGN KEY (book_id) REFERENCES book (book_id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-
-    , CONSTRAINT book_format_fk_format
-        FOREIGN KEY (format_id) REFERENCES format (format_id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
 
 CREATE TABLE genre
 (
-    genre_name VARCHAR(32) PRIMARY KEY
+    genre_name VARCHAR(64) PRIMARY KEY
 );
 
 CREATE TABLE book_genre
 (
     book_id INT NOT NULL
-    , genre_name VARCHAR(32) NOT NULL
+    , genre_name VARCHAR(64) NOT NULL
 
     , CONSTRAINT book_genre_pk
         PRIMARY KEY(book_id, genre_name)
@@ -157,18 +114,34 @@ CREATE TABLE book_genre
         ON UPDATE CASCADE
 );
 
+CREATE TABLE user
+(
+    user_name VARCHAR(64) PRIMARY KEY
+    , password VARCHAR(64) NOT NULL
+);
+
 CREATE TABLE book_list
 (
-    list_name VARCHAR(64) PRIMARY KEY
+    list_name VARCHAR(64) NOT NULL
+    , user_name VARCHAR(64) NOT NULL
+
+    , CONSTRAINT book_list_pk
+        PRIMARY KEY(list_name, user_name)
+
+    , CONSTRAINT book_list_fk_user
+        FOREIGN KEY (user_name) REFERENCES user (user_name)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 CREATE TABLE book_list_book
 (
     book_list_name VARCHAR(64) NOT NULL
+    , user_name VARCHAR(64) NOT NULL
     , book_id INT NOT NULL
 
     , CONSTRAINT book_list_book_pk
-        PRIMARY KEY(book_list_name, book_id)
+        PRIMARY KEY(book_list_name, user_name,  book_id)
 
     , CONSTRAINT book_list_book_fk_book
         FOREIGN KEY (book_id) REFERENCES book (book_id)
@@ -176,38 +149,12 @@ CREATE TABLE book_list_book
         ON UPDATE CASCADE
 
     , CONSTRAINT book_list_book_fk_book_list
-        FOREIGN KEY (book_list_name) REFERENCES book_list (list_name)
+        FOREIGN KEY (book_list_name, user_name) REFERENCES book_list (list_name, user_name)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
 
-CREATE TABLE user
-(
-    user_name VARCHAR(64) PRIMARY KEY
-    , password VARCHAR(64) NOT NULL
-);
-
-
-CREATE TABLE user_book_list
-(
-    user_name VARCHAR(64) NOT NULL
-    , book_list_name VARCHAR(64) NOT NULL
-
-    , CONSTRAINT user_book_list_pk
-        PRIMARY KEY(user_name, book_list_name)
-
-    , CONSTRAINT user_book_list_fk_user
-        FOREIGN KEY (user_name) REFERENCES user (user_name)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-
-    , CONSTRAINT user_book_list_fk_book_list
-        FOREIGN KEY (book_list_name) REFERENCES book_list (list_name)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
-CREATE TABLE user_book_rating
+CREATE TABLE book_rating
 (
     user_name VARCHAR(64) NOT NULL
     , book_id INT NOT NULL
