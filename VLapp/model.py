@@ -125,26 +125,6 @@ def login_user(connection):
     finally:
         login_conn.close()
         
-def print_books(book_list):
-     # Check if the list is not empty and print books
-    if book_list:
-        print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
-            "Book ID", "Book Title", "Release Date", "Genre", "Publisher", "Author", "Series"
-        ))
-        for book in book_list:
-            # Convert release_date to a string for display
-            date_str = book["release_date"].strftime('%Y-%m-%d') if book["release_date"] else "N/A"
-            print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
-                book["book_id"] or "N/A",
-                book["book_title"] or "N/A",
-                date_str,
-                book["genre_name"] or "N/A",
-                book["publisher_name"] or "N/A",
-                book["author_name"] or "N/A",
-                book["series_name"] or "N/A"
-            ))
-    else:
-        print("No books found.")
         
 def get_list(search_param, connection):
     # Replace empty strings with None to match SQL's NULL behavior
@@ -157,7 +137,7 @@ def get_list(search_param, connection):
         # Fetch results
         book_list = get_list_conn.fetchall()
         get_list_conn.close()
-        print_books(book_list)
+        print_books_tabular(book_list)
        
 
     except pymysql.Error as e:
@@ -182,7 +162,7 @@ def filter_current_list(search_param, connection):
         get_list_conn.close()
 
         if book_list:
-            print_books(book_list)
+            print_books_tabular(book_list)
         else:
             print("No books found.")
     except pymysql.Error as e:
