@@ -195,8 +195,8 @@ def get_search_param(username):
 
 def main_menu(username):
     print("welcome to the main menu!")
-    answer = input(f"would you like to search for books or manage your lists {username}"
-                   "\n1. for searching\n2. for managing\nq to quit\n")
+    answer = input(f"Would you like to search for books or manage your lists {username}"
+                   "\n1. Search for books\n2. Manage lists\nq to quit\n")
     return answer
 
 
@@ -212,7 +212,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. export book list to csv file\nq. return to main menu\n") # TODO
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\nr. return to main menu\n")
     return answer
 
 def application_logic(connection, username):
@@ -307,10 +307,13 @@ def manage_lists_logic(connection, username):
             print_user_book_lists(connection, username)
 
         elif list_menu_answer.strip() == '3':
+            delete_book_list(connection, username)
+
+        elif list_menu_answer.strip() == '4':
             export_user_book_list(connection, username)
 
         # quit to main menu
-        elif list_menu_answer.strip().lower() == 'q':
+        elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
             break
 
@@ -668,6 +671,7 @@ def print_books_tabular(book_list):
         print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
+<<<<<<< HEAD
         
         
 def operate_on_user_book_lists(connection, username, operation):
@@ -773,3 +777,55 @@ def operate_on_user_book_lists(connection, username, operation):
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
+=======
+
+'''
+Helper function to delete a book list
+'''
+def delete_book_list(connection, username):
+    try:
+        with connection.cursor() as cursor:
+            # Fetch the user's book lists
+            cursor.callproc('return_list_name_of_user', (username,))
+            book_lists = cursor.fetchall()
+
+            # Check if there are any book lists
+            if not book_lists:
+                print("You have no book lists to delete.")
+                return
+
+            # Display book lists with corresponding numbers
+            print(f"{username}'s Saved Book Lists:")
+            for index, book_list in enumerate(book_lists, start=1):
+                print(f"{index}. {book_list['list_name']}")
+
+            # Prompt the user to select a book list
+            selected_index = int(input("\nEnter the number of the book list you want to delete: "))
+
+            # Validate the user's selection
+            if 1 <= selected_index <= len(book_lists):
+                selected_list_name = book_lists[selected_index - 1]['list_name']
+                confirm = input(
+                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n): ").strip().lower()
+
+                if confirm == 'y':
+                    # Call the DeleteBookList procedure
+                    with connection.cursor() as cursor:
+                        cursor.callproc('delete_book_list', (username, selected_list_name))
+                        result = cursor.fetchall()
+                        if result:
+                            print(result[0]['status_message'])
+                        else:
+                            print("Error: No status message returned.")
+                else:
+                    print("Deletion canceled.")
+            else:
+                print("Invalid selection. Please choose a valid number.")
+
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+>>>>>>> 3302197b394eb855882220d23d827e5c01bed79e
