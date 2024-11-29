@@ -456,6 +456,46 @@ END $$
 
 DELIMITER ;
 
+DELIMITER $$
+
+CREATE PROCEDURE delete_book_list(
+    IN input_user_name VARCHAR(64),
+    IN input_book_list_name VARCHAR(64)
+)
+proc_block: BEGIN
+    -- Check if the user exists
+    IF NOT EXISTS (
+        SELECT 1 FROM user WHERE user_name = input_user_name
+    ) THEN
+        SELECT 'Error: User does not exist' AS status_message;
+        LEAVE proc_block;
+    END IF;
+
+    -- Check if the book list exists for the user
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM book_list 
+        WHERE list_name = input_book_list_name AND user_name = input_user_name
+    ) THEN
+        SELECT 'Error: Book List does not exist for this user' AS status_message;
+        LEAVE proc_block;
+    END IF;
+
+    -- Delete any related entries in other tables (e.g., book_list_book)
+    DELETE FROM book_list_book WHERE book_list_name = input_book_list_name;
+
+    -- Delete the book list
+    DELETE FROM book_list WHERE list_name = input_book_list_name AND user_name = input_user_name;
+
+    -- Return success message
+    SELECT 'Success: Book List Deleted Successfully' AS status_message;
+END $$
+
+DELIMITER ;
+
+-- Test case:
+CALL delete_book_list('bob', 'test_list6');
+
 -- Test case:
 CALL CreateUserBookList('bob', 'test_list3');
 SELECT @status_message;
