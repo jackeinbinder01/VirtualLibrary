@@ -100,9 +100,6 @@ END $$
 
 DELIMITER ;
 
-
-CALL GetBooksByFilters(NULL, NULL, NULL, NULL, NULL);
-DELIMITER $$
 DELIMITER $$
 
 CREATE PROCEDURE FilterOnFilteredList (
@@ -177,7 +174,7 @@ BEGIN
 END $$
 
 DELIMITER ;
-
+DELIMITER $$
 
 -- Add or Update Book Rating
 CREATE PROCEDURE AddOrUpdateBookRating (
@@ -208,7 +205,10 @@ BEGIN
         VALUES (username_p, bookId_p, ratingText_p, ratingScore_p);
     END IF;
 END $$
+DELIMITER ;
 
+
+DELIMITER $$
 -- Drop Filtered List
 CREATE PROCEDURE DropFilteredList ()
 BEGIN
@@ -460,6 +460,5 @@ DELIMITER ;
 CALL CreateUserBookList('bob', 'test_list3');
 SELECT @status_message;
 
-CALL GetBooksByFilters(NULL, NULL, NULL, NULL, NULL);
 
 
