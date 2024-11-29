@@ -212,7 +212,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. Delete a book list\n4.export book list to csv file\nr. return to main menu\n") # TODO
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\nr. return to main menu\n")
     return answer
 
 def application_logic(connection, username):
