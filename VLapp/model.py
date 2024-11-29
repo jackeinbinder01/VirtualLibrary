@@ -651,11 +651,48 @@ def export_book_list_to_csv(book_list_name, books):
 Helper function that prints books in tabular format
 '''
 def print_books_tabular(book_list):
-    # Define headers
-    headers = ["book_id", "book_title", "release_date", "genres", "author_name", "publisher_name", "series_name", "rating", "comments"]
+    if not book_list:
+        print("No books in book list to display.")
+        return
+
+    # Define custom header mapping
+    key_to_header = {
+        "book_id": "Book ID",
+        "book_title": "Book Title",
+        "release_date": "Release Date",
+        "genres": "Genres",
+        "author_name": "Author",
+        "publisher_name": "Publisher Name",
+        "series_name": "Series Name",
+        "rating": "Rating",
+        "comments": "Comments"
+    }
+
+    # Reformat the data to match the custom header names
+    formatted_books = [
+        {
+            key_to_header["book_id"]: book.get("book_id", "N/A"),
+            key_to_header["book_title"]: book.get("book_title", "N/A"),
+            key_to_header["release_date"]: book.get("release_date", "N/A"),
+            key_to_header["genres"]: book.get("genres", "N/A"),
+            key_to_header["author_name"]: book.get("author_name", "N/A"),
+            key_to_header["publisher_name"]: book.get("publisher_name", "N/A"),
+            key_to_header["series_name"]: book.get("series_name", "N/A"),
+            key_to_header["rating"]: book.get("rating", "N/A"),
+            key_to_header["comments"]: book.get("comments", "N/A"),
+        }
+        for book in book_list
+    ]
+
+    # Extract the headers in the desired order
+    custom_headers = list(key_to_header.values())
+
+    # Debugging output
+    print("Formatted books (final structure):", formatted_books)
+    print("Custom headers:", custom_headers)
 
     try:
         # Print table using tabulate
-        print(tabulate(book_list, headers="keys", tablefmt="fancy_grid"))
+        print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
-        print(f"Error displaying table: {e}")
+        print(f"Error displaying table.")
