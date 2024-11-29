@@ -671,8 +671,6 @@ def print_books_tabular(book_list):
         print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
-<<<<<<< HEAD
-        
         
 def operate_on_user_book_lists(connection, username, operation):
     try:
@@ -777,7 +775,6 @@ def operate_on_user_book_lists(connection, username, operation):
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
-=======
 
 '''
 Helper function to delete a book list
@@ -828,4 +825,3 @@ def delete_book_list(connection, username):
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
->>>>>>> 3302197b394eb855882220d23d827e5c01bed79e
