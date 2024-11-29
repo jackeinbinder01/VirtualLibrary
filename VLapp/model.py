@@ -195,8 +195,8 @@ def get_search_param(username):
 
 def main_menu(username):
     print("welcome to the main menu!")
-    answer = input(f"would you like to search for books or manage your lists {username}"
-                   "\n1. for searching\n2. for managing\nq to quit\n")
+    answer = input(f"Would you like to search for books or manage your lists {username}"
+                   "\n1. Search for books\n2. Manage lists\nq to quit\n")
     return answer
 
 
