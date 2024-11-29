@@ -507,7 +507,13 @@ def print_user_book_lists(connection, username):
 
                 # Prompt user to select a book list
                 try:
-                    selected_index = int(input("\nEnter the number of the book list you want to view: "))
+                    selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                    if not selected_index.isdigit():
+                        raise ValueError("Invalid input. Please enter a valid number.")
+                        continue
+
+                    selected_index = int(selected_index)
 
                     # if user selects option to return to management menu
                     if selected_index == len(book_lists) + 1:
@@ -521,8 +527,8 @@ def print_user_book_lists(connection, username):
 
                     else:
                         print("Invalid selection. Please choose a valid number.")
-                except ValueError:
-                    print("Invalid input. Please enter a number.")
+                except ValueError as e:
+                    print(f"Invalid input: {e}. Please enter a number.")
 
 
     except pymysql.MySQLError as e:
@@ -540,6 +546,15 @@ def fetch_books_in_list(connection, book_list_name):
 
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
+
+            # # Debugging: Print the fetched results
+            # print("Fetched books:", books)
+            # if books:
+            #     print("Sample book keys:", books[0].keys())  # Print keys of the first dictionary
+            #
+            # # Display books using the print_books_tabular helper function
+            # if books:
+            #     print_books_tabular(books)  # Ensure books is a list of dictionaries
 
             # Display books using the print_books helper function
             if books:
@@ -637,7 +652,10 @@ Helper function that prints books in tabular format
 '''
 def print_books_tabular(book_list):
     # Define headers
-    headers = ["Book ID", "Book Title", "Release Date", "Genres", "Author", "Publisher", "Series", "Rating", "Comments"]
+    headers = ["book_id", "book_title", "release_date", "genres", "author_name", "publisher_name", "series_name", "rating", "comments"]
 
-    # Print table using tabulate
-    print(tabulate(book_list, headers=headers, tablefmt="fancy_grid"))
+    try:
+        # Print table using tabulate
+        print(tabulate(book_list, headers="keys", tablefmt="fancy_grid"))
+    except ValueError as e:
+        print(f"Error displaying table: {e}")
