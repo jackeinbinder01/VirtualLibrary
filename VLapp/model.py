@@ -547,15 +547,6 @@ def fetch_books_in_list(connection, book_list_name):
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
 
-            # # Debugging: Print the fetched results
-            # print("Fetched books:", books)
-            # if books:
-            #     print("Sample book keys:", books[0].keys())  # Print keys of the first dictionary
-            #
-            # # Display books using the print_books_tabular helper function
-            # if books:
-            #     print_books_tabular(books)  # Ensure books is a list of dictionaries
-
             # Display books using the print_books helper function
             if books:
                 print_books_tabular(books)
@@ -588,7 +579,7 @@ def export_user_book_list(connection, username):
             # Display the user's saved book lists
             print(f"\n{username}'s Saved Book Lists:")
             for index, book_list in enumerate(book_lists, start=1):
-                print(f"{index}. {book_list['book_list_name']}")
+                print(f"{index}. {book_list['list_name']}")
 
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
@@ -600,7 +591,7 @@ def export_user_book_list(connection, username):
 
         # Validate selected index
         if 1 <= selected_index <= len(book_lists):
-            selected_list = book_lists[selected_index - 1]['book_list_name']
+            selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
             books = fetch_books_in_list(connection, selected_list)
@@ -629,7 +620,7 @@ def export_book_list_to_csv(book_list_name, books):
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             #write header row
-            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "series"])
+            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
             # Write book data rows
             for book in books:
@@ -638,9 +629,10 @@ def export_book_list_to_csv(book_list_name, books):
                     book.get("book_title", "N/A"),
                     book.get("release_date", "N/A"),
                     book.get("genres", "N/A"),
-                    book.get("authors", "N/A"),
+                    book.get("author_name", "N/A"),
                     book.get("publisher_name", "N/A"),
                     book.get("series_name", "N/A"),
+                    book.get("rating", "N/A")
                 ])
 
         print(f"\nBook list successfully exported to {file_name}")
