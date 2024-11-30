@@ -115,7 +115,7 @@ END //
 
 DELIMITER ;
 
-DROP PROCEDURE add_book;
+DROP PROCEDURE IF EXISTS add_book;
 DELIMITER //
 
 CREATE PROCEDURE add_book(book_title_p VARCHAR(256), description_p TEXT, author_id_p INT,
