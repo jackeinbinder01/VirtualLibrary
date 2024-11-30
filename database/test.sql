@@ -2,7 +2,8 @@ USE virtual_library_db;
 
 SELECT * FROM book;
 
-SELECT * FROM author WHERE author_id = 10;
+
+SELECT * FROM author;
 
 SELECT * FROM publisher;
 
@@ -16,7 +17,7 @@ SELECT * FROM genre;
 
 SELECT * FROM book_list;
 
-SELECT * FROM book_genre WHERE book_id = 1;
+SELECT * FROM book_genre WHERE book_id = 97;
 
 SELECT * FROM book_list_book;
 

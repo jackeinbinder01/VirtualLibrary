@@ -2,6 +2,8 @@ import pymysql
 import datetime
 import csv
 from tabulate import tabulate
+import tkinter as tk
+from tkinter import filedialog
 
 
 def connect_to_database():
@@ -212,7 +214,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\nr. return to main menu\n")
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\n5. import a book list from a csv file\nr. return to main menu\n")
     return answer
 
 def application_logic(connection, username):
@@ -312,6 +314,9 @@ def manage_lists_logic(connection, username):
         elif list_menu_answer.strip() == '4':
             export_user_book_list(connection, username)
 
+        elif list_menu_answer.strip() == '5':
+            import_book_list_from_csv(connection, username)
+
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
@@ -365,27 +370,24 @@ def add_book_by_id_logic(connection, username):
        book_id, book_title = grab_book_by_id(connection, "add")
        if book_title is not None and book_id is not None:
            correct_book_bool = True
-    print_list_names_of_user(connection, username)
-    list_name = input("choose a list from above (case sensitive) or type 'n' to make a new list\n")
-    if list_name.strip().lower() == 'n':
-        list_name = input("What is the name of the new list?\n")
-        create_user_book_list(connection, username, list_name)
-    
-    try:
-        add_book = connection.cursor()
-        add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
-        connection.commit()
-        add_book.close()
-        print(f"Here is updated the list of books in {list_name}")
-        fetch_books_in_list(connection, list_name)
-    except pymysql.MySQLError as e:
-        print(f"Database error: {e}")
+    list_name = operate_on_user_book_lists(connection, username, "add")
+    if list_name == 0:
+        print(f"{book_title} needs to be added to a list, returning to search menu")
+        return
+    else:
+        try:
+            add_book = connection.cursor()
+            add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
+            connection.commit()
+            add_book.close()
+            print(f"Here is updated the list of books in {list_name}")
+            fetch_books_in_list(connection, list_name)
+        except pymysql.MySQLError as e:
+            print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username): # TODO
-    print_list_names_of_user(connection, username)
-    list_name = input("choose a list from above (case sensitive)\n")
-    print(f"Here is the list of books in {list_name}")
+    list_name = operate_on_user_book_lists(connection, username, "delete")
     fetch_books_in_list(connection, list_name)
     try:
         remove_book = connection.cursor()
@@ -625,6 +627,88 @@ def export_book_list_to_csv(book_list_name, books):
     except Exception as e:
         print(f"An error occured while exporting the book list: {e}")
 
+def import_book_list_from_csv(connection, username):
+    """
+    Imports books and a book list from a csv file into the book and book_list tables in db.
+
+    Opens tkinter file chooser and prompts the user to choose the book list csv to import.
+
+    :param connection: connection to MySQL database
+    :param username: user's account name
+    """
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename(
+        title="Please select a CSV file to import",
+        filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+    )
+
+    file_name = "file_name"
+
+    cursor = connection.cursor()
+
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as file:
+            reader = csv.reader(file)
+            header = next(reader)
+            for row in reader:
+                book_title = row[0]
+                release_date = row[1]
+                author_name = row[2]
+                author_email = row[3]
+                publisher_name = row[4]
+                publisher_email = row[5]
+                description = row[6]
+                series = row[7]
+                url = row[8]
+                format_type = row[9]
+
+                if any(field == '' for field in [book_title, release_date, author_name,
+                                                 author_email, publisher_name, publisher_email]):
+                    print("Invalid, missing required fields")
+                else:
+                    try:
+                        cursor.execute(
+                            f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{release_date}')")
+                    except pymysql.MySQLError as e:
+                        print(f"Database error: {e}")
+                    try:
+                        cursor.execute(
+                            f"CALL add_book_to_user_list('{username}', '{file_name}', '{book_title}', '{release_date}')")
+                    except pymysql.MySQLError as e:
+                        print(f"Database error: {e}")
+                if series != '':
+                    try:
+                        cursor.execute(f"CALL add_book_to_series('{book_title}', '{release_date}', '{series}')")
+                    except pymysql.MySQLError as e:
+                        print(f"Database error: {e}")
+
+                if all(field != '' for field in [url, format_type]):
+                    try:
+                        cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', '{release_date}')")
+                    except pymysql.MySQLError as e:
+                        print(f"Database error: {e}")
+
+                for i in range(10, 13):
+                    genre_name = row[i]
+                    if genre_name:
+                        try:
+                            cursor.execute(
+                                f"CALL add_genre_to_book('{book_title}', '{release_date}', '{genre_name}')"
+                            )
+                        except pymysql.MySQLError as e:
+                            print(f"Database error: {e}")
+        connection.commit()
+        print("Import successful!")
+
+    except csv.Error as e:
+        print(f"Error reading CSV: {e}")
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+    finally:
+        cursor.close()
+
 '''
 Helper function that prints books in tabular format
 '''
@@ -674,6 +758,110 @@ def print_books_tabular(book_list):
         print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
+        
+def operate_on_user_book_lists(connection, username, operation):
+    try:
+        with connection.cursor() as cursor:
+            # Call the stored procedure
+            cursor.callproc('return_list_name_of_user', (username,))
+
+            # Fetch all results returned by the procedure
+            book_lists = cursor.fetchall()
+
+            # If not book lists found
+            if operation == "add":
+                if not book_lists:
+                    create_new_list = input("No book lists found for the user. Create new list? y/n\n")
+                    if (create_new_list.strip().lower() == "y"):
+                        list_name = input("What is the name of the new list?\n")
+                        create_user_book_list(connection, username, list_name)
+                        return list_name
+                    else:
+                        return 0
+            else:
+                if not book_lists:
+                    print("There are no lists to delete from, returning to search menu")
+                    return 0
+            if operation == "add":
+                while True:
+                    # Display the user's saved book lists
+                    print(f"{username}'s Saved Book Lists: ")
+                    for index, book_list in enumerate(book_lists, start=1):
+                        print(f"{index}. {book_list['list_name']}")
+
+                    # add option to return back to management menu
+                    
+                    print(f"{len(book_lists) + 1}. Create a new list")
+                    print(f"{len(book_lists) + 2}. Return to management menu")  # Option to return
+
+
+                    # Prompt user to select a book list
+                    try:
+                        selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                        if not selected_index.isdigit():
+                            raise ValueError("Invalid input. Please enter a valid number.")
+                            continue
+
+                        selected_index = int(selected_index)
+
+                        # if user selects option to return to management menu
+                        if selected_index == len(book_lists) + 1:
+                            list_name = input("What is the name of the new list?\n")
+                            create_user_book_list(connection, username, list_name)
+                            return list_name
+
+                        if selected_index == len(book_lists) + 2:
+                            print("Returning to search menu")
+                            return
+                        # validate selected index
+                        if 1 <= selected_index <= len(book_lists):
+                            selected_list = book_lists[selected_index - 1]['list_name']
+                            return selected_list
+
+                        else:
+                            print("Invalid selection. Please choose a valid number.")
+                    except ValueError as e:
+                        print(f"Invalid input: {e}. Please enter a number.")
+                        
+                        
+            if operation == "delete":
+                while True:
+                    # Display the user's saved book lists
+                    print(f"{username}'s Saved Book Lists: ")
+                    for index, book_list in enumerate(book_lists, start=1):
+                        print(f"{index}. {book_list['list_name']}")
+
+                    # add option to return back to management menu
+                    
+                    print(f"{len(book_lists) + 1}. Return to management menu")  # Option to return
+
+
+                    # Prompt user to select a book list
+                    try:
+                        selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                        if not selected_index.isdigit():
+                            raise ValueError("Invalid input. Please enter a valid number.")
+                            continue
+
+                        selected_index = int(selected_index)
+
+                        if selected_index == len(book_lists) + 1:
+                            print("Returning to search menu")
+                            return
+                        # validate selected index
+                        if 1 <= selected_index <= len(book_lists):
+                            selected_list = book_lists[selected_index - 1]['list_name']
+                            return selected_list
+
+                        else:
+                            print("Invalid selection. Please choose a valid number.")
+                    except ValueError as e:
+                        print(f"Invalid input: {e}. Please enter a number.")
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
 
 '''
 Helper function to delete a book list

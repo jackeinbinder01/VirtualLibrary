@@ -1,9 +1,6 @@
 import model
 import pymysql
 
-
-
-
 def work():
     connection = model.connect_to_database()
     if connection == None:
@@ -22,7 +19,6 @@ def work():
         return
     model.application_logic(connection, username)
     connection.commit()
-        
 
 def main():
     work()
