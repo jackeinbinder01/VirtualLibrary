@@ -1,9 +1,11 @@
+import os
+
 import pymysql
 import datetime
 import csv
 from tabulate import tabulate
-import tkinter as tk
-from tkinter import filedialog
+from PyQt5.QtWidgets import QApplication, QFileDialog
+
 
 
 def connect_to_database():
@@ -636,16 +638,22 @@ def import_book_list_from_csv(connection, username):
     :param connection: connection to MySQL database
     :param username: user's account name
     """
-    root = tk.Tk()
-    root.withdraw()
 
-    file_path = filedialog.askopenfilename(
-        title="Please select a CSV file to import",
-        filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+    app = QApplication([])
+
+    # Open file dialog to select a CSV file
+    file_path, _ = QFileDialog.getOpenFileName(
+        None,
+        "Please select a CSV file to import",
+        "",
+        "CSV Files (*.csv);;All Files (*)"
     )
 
-    file_name = "file_name"
+    if not file_path:
+        print("No file selected.")
+        return
 
+    file_name = os.path.basename(file_path)
     cursor = connection.cursor()
 
     try:

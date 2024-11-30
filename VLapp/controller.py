@@ -1,6 +1,7 @@
 import model
 import pymysql
 
+
 def work():
     connection = model.connect_to_database()
     if connection == None:
@@ -11,7 +12,7 @@ def work():
             username = model.login_options(connection)
             if username == False:
                 print("the connection was unsuccessful, quitting now")
-                return 
+                return
             else:
                 break
     except Exception as e:
@@ -20,9 +21,9 @@ def work():
     model.application_logic(connection, username)
     connection.commit()
 
+
 def main():
     work()
-
 
 
 if __name__ == "__main__":
