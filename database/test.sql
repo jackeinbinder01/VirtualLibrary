@@ -2,6 +2,7 @@ USE virtual_library_db;
 
 SELECT * FROM book;
 
+
 SELECT * FROM author;
 
 SELECT * FROM publisher;

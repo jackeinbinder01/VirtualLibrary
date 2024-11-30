@@ -147,7 +147,7 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS add_genre_to_book;
 DELIMITER //
 
-CREATE PROCEDURE add_genre_to_book(book_title_p VARCHAR(256) , release_date_p DATE, genre_name_p VARCHAR(64))
+CREATE PROCEDURE add_genre_to_book(book_title_p VARCHAR(256), release_date_p DATE, genre_name_p VARCHAR(64))
 BEGIN
     DECLARE book_not_in_db_error VARCHAR(512);
     DECLARE book_id_v INT;
@@ -159,7 +159,7 @@ BEGIN
     SET book_genre_in_db = CONCAT('book: ', book_title_p, ', with genre: ', genre_name_p,
                                   ', is already in book_genre table');
 
-    IF book_title_p = '' OR release_date_p = '' OR genre_name_p = '' THEN
+    IF book_title_p = '' OR genre_name_p = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = blank_param_error;
     ELSEIF NOT EXISTS (
@@ -185,7 +185,7 @@ BEGIN
 
     SET book_id_v = (
         SELECT
-        b.book_id
+            b.book_id
         FROM book b
         WHERE 1=1
             AND b.book_title = book_title_p
