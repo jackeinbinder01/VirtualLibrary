@@ -2,7 +2,7 @@ DROP DATABASE IF EXISTS virtual_library_db;
 CREATE DATABASE IF NOT EXISTS virtual_library_db;
 USE virtual_library_db;
 
-CREATE TABLE author
+CREATE TABLE author # Need to make email nullable and not AK
 (
     author_id INT AUTO_INCREMENT PRIMARY KEY
     , author_name VARCHAR(128) NOT NULL
@@ -15,7 +15,7 @@ CREATE TABLE author
         UNIQUE(email_address)
 );
 
-CREATE TABLE publisher
+CREATE TABLE publisher # Need to make email nullable and not AK
 (
     publisher_id INT AUTO_INCREMENT PRIMARY KEY
     , publisher_name VARCHAR(128) NOT NULL
