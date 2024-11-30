@@ -647,7 +647,10 @@ def import_book_list_from_csv(connection, username):
     with open(file_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         for row in reader:
-            print(row)
+            print(row[1])
+
+
+
 
 
 '''
