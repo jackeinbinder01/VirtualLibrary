@@ -1,7 +1,5 @@
 import os
-
 import pymysql
-import datetime
 import csv
 from tabulate import tabulate
 from PyQt5.QtWidgets import QApplication, QFileDialog
@@ -654,12 +652,14 @@ def import_book_list_from_csv(connection, username):
         return
 
     file_name = os.path.basename(file_path)
+    book_list_name = os.path.splitext(file_name)[0]
+    print(book_list_name)
     cursor = connection.cursor()
 
     try:
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-            header = next(reader)
+            next(reader)
             for row in reader:
                 book_title = row[0]
                 release_date = row[1]
@@ -680,23 +680,23 @@ def import_book_list_from_csv(connection, username):
                         cursor.execute(
                             f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{release_date}')")
                     except pymysql.MySQLError as e:
-                        print(f"Database error: {e}")
+                        print(f"Attempted add book to db: {e}")
                     try:
                         cursor.execute(
-                            f"CALL add_book_to_user_list('{username}', '{file_name}', '{book_title}', '{release_date}')")
+                            f"CALL add_book_to_user_list('{username}', '{book_list_name}', '{book_title}', '{release_date}')")
                     except pymysql.MySQLError as e:
-                        print(f"Database error: {e}")
+                        print(f"Attempted add book to used list: {e}")
                 if series != '':
                     try:
                         cursor.execute(f"CALL add_book_to_series('{book_title}', '{release_date}', '{series}')")
                     except pymysql.MySQLError as e:
-                        print(f"Database error: {e}")
+                        print(f"Attempted add book to series: {e}")
 
                 if all(field != '' for field in [url, format_type]):
                     try:
                         cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', '{release_date}')")
                     except pymysql.MySQLError as e:
-                        print(f"Database error: {e}")
+                        print(f"Attempted add url: {e}")
 
                 for i in range(10, 13):
                     genre_name = row[i]
@@ -706,9 +706,9 @@ def import_book_list_from_csv(connection, username):
                                 f"CALL add_genre_to_book('{book_title}', '{release_date}', '{genre_name}')"
                             )
                         except pymysql.MySQLError as e:
-                            print(f"Database error: {e}")
+                            print(f"Attempted add genre to book: {e}")
         connection.commit()
-        print("Import successful!")
+        print("\nImport complete!\n")
 
     except csv.Error as e:
         print(f"Error reading CSV: {e}")
