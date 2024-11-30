@@ -56,7 +56,7 @@ BEGIN
         book_id INT,
         book_title VARCHAR(256),
         release_date DATE,
-        genre_name VARCHAR(64),
+        genres VARCHAR(256),
         publisher_name VARCHAR(128),
         author_name VARCHAR(128),
         series_name VARCHAR(128)
@@ -66,12 +66,12 @@ BEGIN
     TRUNCATE TABLE FilteredBookList;
 
     -- Populate FilteredBookList with filtered data
-    INSERT INTO FilteredBookList (book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name)
-    SELECT DISTINCT 
+    INSERT INTO FilteredBookList (book_id, book_title, release_date, genres, publisher_name, author_name, series_name)
+    SELECT 
         b.book_id, 
         b.book_title, 
         b.release_date,
-        g.genre_name,
+        GROUP_CONCAT(DISTINCT g.genre_name ORDER BY g.genre_name SEPARATOR ', ') AS genres,
         p.publisher_name,
         a.author_name,
         s.series_name
@@ -83,11 +83,16 @@ BEGIN
     LEFT JOIN book_series bs ON b.book_id = bs.book_id
     LEFT JOIN series s ON bs.series_id = s.series_id
     WHERE 
-        (genreName_p IS NULL OR g.genre_name = genreName_p) AND
+        (genreName_p IS NULL OR EXISTS (
+            SELECT 1 
+            FROM book_genre bg2
+            WHERE bg2.book_id = b.book_id AND bg2.genre_name = genreName_p
+        )) AND
         (bookName_p IS NULL OR b.book_title = bookName_p) AND
         (publisherName_p IS NULL OR p.publisher_name = publisherName_p) AND
         (authorName_p IS NULL OR a.author_name = authorName_p) AND
-        (seriesName_p IS NULL OR s.series_name = seriesName_p);
+        (seriesName_p IS NULL OR s.series_name = seriesName_p)
+    GROUP BY b.book_id, b.book_title, b.release_date, p.publisher_name, a.author_name, s.series_name;
 
     -- Return the contents of FilteredBookList
     SELECT * FROM FilteredBookList;
@@ -95,10 +100,8 @@ END $$
 
 DELIMITER ;
 
-CALL GetBooksByFilters(NULL, NULL, NULL, NULL, NULL);
 DELIMITER $$
 
--- Filter on Filtered List
 CREATE PROCEDURE FilterOnFilteredList (
     IN genreName_p VARCHAR(64),
     IN bookName_p VARCHAR(256),
@@ -122,7 +125,7 @@ BEGIN
         book_id INT,
         book_title VARCHAR(256),
         release_date DATE,
-        genre_name VARCHAR(64),
+        genres VARCHAR(256), -- Aggregated genres
         publisher_name VARCHAR(128),
         author_name VARCHAR(128),
         series_name VARCHAR(128)
@@ -131,28 +134,37 @@ BEGIN
     -- Clear the working table
     TRUNCATE TABLE WorkingFilteredList;
 
-    -- Populate the working table with filtered data
-    INSERT INTO WorkingFilteredList (book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name)
-    SELECT DISTINCT 
+    -- Populate the working table with aggregated genres
+    INSERT INTO WorkingFilteredList (book_id, book_title, release_date, genres, publisher_name, author_name, series_name)
+    SELECT 
         book_id, 
         book_title, 
         release_date,
-        genre_name,
+        GROUP_CONCAT(DISTINCT genre_name ORDER BY genre_name SEPARATOR ', ') AS genres, -- Aggregate genres
         publisher_name,
         author_name,
         series_name
     FROM FilteredBookList
     WHERE 
-        (genreName_p IS NULL OR genre_name = genreName_p) AND
+        (genreName_p IS NULL OR FIND_IN_SET(genreName_p, genre_name)) AND -- Match genre within aggregated genres
         (bookName_p IS NULL OR book_title = bookName_p) AND
         (publisherName_p IS NULL OR publisher_name = publisherName_p) AND
         (authorName_p IS NULL OR author_name = authorName_p) AND
-        (seriesName_p IS NULL OR series_name = seriesName_p);
+        (seriesName_p IS NULL OR series_name = seriesName_p)
+    GROUP BY book_id, book_title, release_date, publisher_name, author_name, series_name;
 
     -- Replace FilteredBookList with the filtered results
     TRUNCATE TABLE FilteredBookList;
     INSERT INTO FilteredBookList (book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name)
-    SELECT book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name FROM WorkingFilteredList;
+    SELECT 
+        book_id, 
+        book_title, 
+        release_date, 
+        genres AS genre_name, -- Store aggregated genres in FilteredBookList
+        publisher_name, 
+        author_name, 
+        series_name 
+    FROM WorkingFilteredList;
 
     -- Drop the working table (optional if you want it only temporary)
     DROP TABLE IF EXISTS WorkingFilteredList;
@@ -160,6 +172,9 @@ BEGIN
     -- Return the updated FilteredBookList
     SELECT * FROM FilteredBookList;
 END $$
+
+DELIMITER ;
+DELIMITER $$
 
 -- Add or Update Book Rating
 CREATE PROCEDURE AddOrUpdateBookRating (
@@ -190,7 +205,10 @@ BEGIN
         VALUES (username_p, bookId_p, ratingText_p, ratingScore_p);
     END IF;
 END $$
+DELIMITER ;
 
+
+DELIMITER $$
 -- Drop Filtered List
 CREATE PROCEDURE DropFilteredList ()
 BEGIN
@@ -437,6 +455,46 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE PROCEDURE delete_book_list(
+    IN input_user_name VARCHAR(64),
+    IN input_book_list_name VARCHAR(64)
+)
+proc_block: BEGIN
+    -- Check if the user exists
+    IF NOT EXISTS (
+        SELECT 1 FROM user WHERE user_name = input_user_name
+    ) THEN
+        SELECT 'Error: User does not exist' AS status_message;
+        LEAVE proc_block;
+    END IF;
+
+    -- Check if the book list exists for the user
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM book_list 
+        WHERE list_name = input_book_list_name AND user_name = input_user_name
+    ) THEN
+        SELECT 'Error: Book List does not exist for this user' AS status_message;
+        LEAVE proc_block;
+    END IF;
+
+    -- Delete any related entries in other tables (e.g., book_list_book)
+    DELETE FROM book_list_book WHERE book_list_name = input_book_list_name;
+
+    -- Delete the book list
+    DELETE FROM book_list WHERE list_name = input_book_list_name AND user_name = input_user_name;
+
+    -- Return success message
+    SELECT 'Success: Book List Deleted Successfully' AS status_message;
+END $$
+
+DELIMITER ;
+
+-- Test case:
+CALL delete_book_list('bob', 'test_list6');
 
 -- Test case:
 CALL CreateUserBookList('bob', 'test_list3');

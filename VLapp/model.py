@@ -125,26 +125,6 @@ def login_user(connection):
     finally:
         login_conn.close()
         
-def print_books(book_list):
-     # Check if the list is not empty and print books
-    if book_list:
-        print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
-            "Book ID", "Book Title", "Release Date", "Genre", "Publisher", "Author", "Series"
-        ))
-        for book in book_list:
-            # Convert release_date to a string for display
-            date_str = book["release_date"].strftime('%Y-%m-%d') if book["release_date"] else "N/A"
-            print("{:<10} {:<75} {:<20} {:<40} {:<25} {:<25} {:<25}".format(
-                book["book_id"] or "N/A",
-                book["book_title"] or "N/A",
-                date_str,
-                book["genre_name"] or "N/A",
-                book["publisher_name"] or "N/A",
-                book["author_name"] or "N/A",
-                book["series_name"] or "N/A"
-            ))
-    else:
-        print("No books found.")
         
 def get_list(search_param, connection):
     # Replace empty strings with None to match SQL's NULL behavior
@@ -157,7 +137,7 @@ def get_list(search_param, connection):
         # Fetch results
         book_list = get_list_conn.fetchall()
         get_list_conn.close()
-        print_books(book_list)
+        print_books_tabular(book_list)
        
 
     except pymysql.Error as e:
@@ -182,7 +162,7 @@ def filter_current_list(search_param, connection):
         get_list_conn.close()
 
         if book_list:
-            print_books(book_list)
+            print_books_tabular(book_list)
         else:
             print("No books found.")
     except pymysql.Error as e:
@@ -215,8 +195,8 @@ def get_search_param(username):
 
 def main_menu(username):
     print("welcome to the main menu!")
-    answer = input(f"would you like to search for books or manage your lists {username}"
-                   "\n1. for searching\n2. for managing\nq to quit\n")
+    answer = input(f"Would you like to search for books or manage your lists {username}"
+                   "\n1. Search for books\n2. Manage lists\nq to quit\n")
     return answer
 
 
@@ -232,7 +212,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. export book list to csv file\nq. return to main menu\n") # TODO
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\nr. return to main menu\n")
     return answer
 
 def application_logic(connection, username):
@@ -327,10 +307,13 @@ def manage_lists_logic(connection, username):
             print_user_book_lists(connection, username)
 
         elif list_menu_answer.strip() == '3':
+            delete_book_list(connection, username)
+
+        elif list_menu_answer.strip() == '4':
             export_user_book_list(connection, username)
 
         # quit to main menu
-        elif list_menu_answer.strip().lower() == 'q':
+        elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
             break
 
@@ -382,27 +365,24 @@ def add_book_by_id_logic(connection, username):
        book_id, book_title = grab_book_by_id(connection, "add")
        if book_title is not None and book_id is not None:
            correct_book_bool = True
-    print_list_names_of_user(connection, username)
-    list_name = input("choose a list from above (case sensitive) or type 'n' to make a new list\n")
-    if list_name.strip().lower() == 'n':
-        list_name = input("What is the name of the new list?\n")
-        create_user_book_list(connection, username, list_name)
-    
-    try:
-        add_book = connection.cursor()
-        add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
-        connection.commit()
-        add_book.close()
-        print(f"Here is updated the list of books in {list_name}")
-        fetch_books_in_list(connection, list_name)
-    except pymysql.MySQLError as e:
-        print(f"Database error: {e}")
+    list_name = operate_on_user_book_lists(connection, username, "add")
+    if list_name == 0:
+        print(f"{book_title} needs to be added to a list, returning to search menu")
+        return
+    else:
+        try:
+            add_book = connection.cursor()
+            add_book.callproc("AddBookToSublist", (username, list_name, book_id, "@BookAddStatus"))
+            connection.commit()
+            add_book.close()
+            print(f"Here is updated the list of books in {list_name}")
+            fetch_books_in_list(connection, list_name)
+        except pymysql.MySQLError as e:
+            print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username): # TODO
-    print_list_names_of_user(connection, username)
-    list_name = input("choose a list from above (case sensitive)\n")
-    print(f"Here is the list of books in {list_name}")
+    list_name = operate_on_user_book_lists(connection, username, "delete")
     fetch_books_in_list(connection, list_name)
     try:
         remove_book = connection.cursor()
@@ -510,7 +490,13 @@ def print_user_book_lists(connection, username):
 
                 # Prompt user to select a book list
                 try:
-                    selected_index = int(input("\nEnter the number of the book list you want to view: "))
+                    selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                    if not selected_index.isdigit():
+                        raise ValueError("Invalid input. Please enter a valid number.")
+                        continue
+
+                    selected_index = int(selected_index)
 
                     # if user selects option to return to management menu
                     if selected_index == len(book_lists) + 1:
@@ -524,8 +510,8 @@ def print_user_book_lists(connection, username):
 
                     else:
                         print("Invalid selection. Please choose a valid number.")
-                except ValueError:
-                    print("Invalid input. Please enter a number.")
+                except ValueError as e:
+                    print(f"Invalid input: {e}. Please enter a number.")
 
 
     except pymysql.MySQLError as e:
@@ -588,7 +574,7 @@ def export_user_book_list(connection, username):
 
         # Validate selected index
         if 1 <= selected_index <= len(book_lists):
-            selected_list = book_lists[selected_index - 1]['book_list_name']
+            selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
             books = fetch_books_in_list(connection, selected_list)
@@ -617,7 +603,7 @@ def export_book_list_to_csv(book_list_name, books):
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             #write header row
-            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "series"])
+            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
             # Write book data rows
             for book in books:
@@ -626,9 +612,10 @@ def export_book_list_to_csv(book_list_name, books):
                     book.get("book_title", "N/A"),
                     book.get("release_date", "N/A"),
                     book.get("genres", "N/A"),
-                    book.get("authors", "N/A"),
+                    book.get("author_name", "N/A"),
                     book.get("publisher_name", "N/A"),
                     book.get("series_name", "N/A"),
+                    book.get("rating", "N/A")
                 ])
 
         print(f"\nBook list successfully exported to {file_name}")
@@ -639,8 +626,202 @@ def export_book_list_to_csv(book_list_name, books):
 Helper function that prints books in tabular format
 '''
 def print_books_tabular(book_list):
-    # Define headers
-    headers = ["Book ID", "Book Title", "Release Date", "Genres", "Author", "Publisher", "Series", "Rating", "Comments"]
+    if not book_list:
+        print("No books in book list to display.")
+        return
 
-    # Print table using tabulate
-    print(tabulate(book_list, headers=headers, tablefmt="fancy_grid"))
+    # Define custom header mapping
+    key_to_header = {
+        "book_id": "Book ID",
+        "book_title": "Book Title",
+        "release_date": "Release Date",
+        "genres": "Genres",
+        "author_name": "Author",
+        "publisher_name": "Publisher Name",
+        "series_name": "Series Name",
+        "rating": "Rating",
+        "comments": "Comments"
+    }
+
+    # Reformat the data to match the custom header names
+    formatted_books = [
+        {
+            key_to_header["book_id"]: book.get("book_id", "N/A"),
+            key_to_header["book_title"]: book.get("book_title", "N/A"),
+            key_to_header["release_date"]: book.get("release_date", "N/A"),
+            key_to_header["genres"]: book.get("genres", "N/A"),
+            key_to_header["author_name"]: book.get("author_name", "N/A"),
+            key_to_header["publisher_name"]: book.get("publisher_name", "N/A"),
+            key_to_header["series_name"]: book.get("series_name", "N/A"),
+            key_to_header["rating"]: book.get("rating", "N/A"),
+            key_to_header["comments"]: book.get("comments", "N/A"),
+        }
+        for book in book_list
+    ]
+
+    # Extract the headers in the desired order
+    custom_headers = list(key_to_header.values())
+
+    # Debugging output
+    print("Formatted books (final structure):", formatted_books)
+    print("Custom headers:", custom_headers)
+
+    try:
+        # Print table using tabulate
+        print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
+    except ValueError as e:
+        print(f"Error displaying table.")
+        
+def operate_on_user_book_lists(connection, username, operation):
+    try:
+        with connection.cursor() as cursor:
+            # Call the stored procedure
+            cursor.callproc('return_list_name_of_user', (username,))
+
+            # Fetch all results returned by the procedure
+            book_lists = cursor.fetchall()
+
+            # If not book lists found
+            if operation == "add":
+                if not book_lists:
+                    create_new_list = input("No book lists found for the user. Create new list? y/n\n")
+                    if (create_new_list.strip().lower() == "y"):
+                        list_name = input("What is the name of the new list?\n")
+                        create_user_book_list(connection, username, list_name)
+                        return list_name
+                    else:
+                        return 0
+            else:
+                if not book_lists:
+                    print("There are no lists to delete from, returning to search menu")
+                    return 0
+            if operation == "add":
+                while True:
+                    # Display the user's saved book lists
+                    print(f"{username}'s Saved Book Lists: ")
+                    for index, book_list in enumerate(book_lists, start=1):
+                        print(f"{index}. {book_list['list_name']}")
+
+                    # add option to return back to management menu
+                    
+                    print(f"{len(book_lists) + 1}. Create a new list")
+                    print(f"{len(book_lists) + 2}. Return to management menu")  # Option to return
+
+
+                    # Prompt user to select a book list
+                    try:
+                        selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                        if not selected_index.isdigit():
+                            raise ValueError("Invalid input. Please enter a valid number.")
+                            continue
+
+                        selected_index = int(selected_index)
+
+                        # if user selects option to return to management menu
+                        if selected_index == len(book_lists) + 1:
+                            list_name = input("What is the name of the new list?\n")
+                            create_user_book_list(connection, username, list_name)
+                            return list_name
+
+                        if selected_index == len(book_lists) + 2:
+                            print("Returning to search menu")
+                            return
+                        # validate selected index
+                        if 1 <= selected_index <= len(book_lists):
+                            selected_list = book_lists[selected_index - 1]['list_name']
+                            return selected_list
+
+                        else:
+                            print("Invalid selection. Please choose a valid number.")
+                    except ValueError as e:
+                        print(f"Invalid input: {e}. Please enter a number.")
+                        
+                        
+            if operation == "delete":
+                while True:
+                    # Display the user's saved book lists
+                    print(f"{username}'s Saved Book Lists: ")
+                    for index, book_list in enumerate(book_lists, start=1):
+                        print(f"{index}. {book_list['list_name']}")
+
+                    # add option to return back to management menu
+                    
+                    print(f"{len(book_lists) + 1}. Return to management menu")  # Option to return
+
+
+                    # Prompt user to select a book list
+                    try:
+                        selected_index = (input("\nEnter the number of the book list you want to view: "))
+
+                        if not selected_index.isdigit():
+                            raise ValueError("Invalid input. Please enter a valid number.")
+                            continue
+
+                        selected_index = int(selected_index)
+
+                        if selected_index == len(book_lists) + 1:
+                            print("Returning to search menu")
+                            return
+                        # validate selected index
+                        if 1 <= selected_index <= len(book_lists):
+                            selected_list = book_lists[selected_index - 1]['list_name']
+                            return selected_list
+
+                        else:
+                            print("Invalid selection. Please choose a valid number.")
+                    except ValueError as e:
+                        print(f"Invalid input: {e}. Please enter a number.")
+
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+
+'''
+Helper function to delete a book list
+'''
+def delete_book_list(connection, username):
+    try:
+        with connection.cursor() as cursor:
+            # Fetch the user's book lists
+            cursor.callproc('return_list_name_of_user', (username,))
+            book_lists = cursor.fetchall()
+
+            # Check if there are any book lists
+            if not book_lists:
+                print("You have no book lists to delete.")
+                return
+
+            # Display book lists with corresponding numbers
+            print(f"{username}'s Saved Book Lists:")
+            for index, book_list in enumerate(book_lists, start=1):
+                print(f"{index}. {book_list['list_name']}")
+
+            # Prompt the user to select a book list
+            selected_index = int(input("\nEnter the number of the book list you want to delete: "))
+
+            # Validate the user's selection
+            if 1 <= selected_index <= len(book_lists):
+                selected_list_name = book_lists[selected_index - 1]['list_name']
+                confirm = input(
+                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n): ").strip().lower()
+
+                if confirm == 'y':
+                    # Call the DeleteBookList procedure
+                    with connection.cursor() as cursor:
+                        cursor.callproc('delete_book_list', (username, selected_list_name))
+                        result = cursor.fetchall()
+                        if result:
+                            print(result[0]['status_message'])
+                        else:
+                            print("Error: No status message returned.")
+                else:
+                    print("Deletion canceled.")
+            else:
+                print("Invalid selection. Please choose a valid number.")
+
+    except ValueError:
+        print("Invalid input. Please enter a number.")
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
