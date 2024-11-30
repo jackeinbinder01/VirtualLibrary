@@ -16,7 +16,7 @@ SELECT * FROM genre;
 
 SELECT * FROM book_list;
 
-SELECT * FROM book_genre WHERE book_id = 1;
+SELECT * FROM book_genre WHERE book_id = 97;
 
 SELECT * FROM book_list_book;
 

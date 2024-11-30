@@ -183,13 +183,14 @@ BEGIN
         VALUES (genre_name_p);
     END IF;
 
-    INSERT INTO book_id_v
-    SELECT
+    SET book_id_v = (
+        SELECT
         b.book_id
-    FROM book b
-    WHERE 1=1
-        AND b.book_title = book_title_p
-        AND b.release_date = release_date_p;
+        FROM book b
+        WHERE 1=1
+            AND b.book_title = book_title_p
+            AND b.release_date = release_date_p
+        );
 
     IF EXISTS (
         SELECT
