@@ -694,7 +694,6 @@ def import_book_list_from_csv(connection, username):
                     genre_name = row[i]
                     if genre_name:
                         try:
-                            print(release_date)
                             cursor.execute(
                                 f"CALL add_genre_to_book('{book_title}', '{release_date}', '{genre_name}')"
                             )
@@ -709,7 +708,6 @@ def import_book_list_from_csv(connection, username):
         print(f"Database error: {e}")
     finally:
         cursor.close()
-
 
 '''
 Helper function that prints books in tabular format
