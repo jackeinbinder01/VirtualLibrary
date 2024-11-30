@@ -644,13 +644,59 @@ def import_book_list_from_csv(connection, username):
         filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
     )
 
+    file_name = "file_name"
+
+    cursor = connection.cursor()
+
     with open(file_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
+        header = next(reader)
         for row in reader:
-            print(row[1])
+            book_title = row[0]
+            release_date = row[1]
+            author_name = row[2]
+            author_email = row[3]
+            publisher_name = row[4]
+            publisher_email = row[5]
+            description = row[6]
+            series = row[7]
+            url = row[8]
+            format_type = row[9]
 
+            if any(field == '' for field in [book_title, release_date, author_name,
+                                             author_email, publisher_name, publisher_email]):
+                print("Invalid, missing required fields")
+            else:
+                try:
+                    cursor.execute(
+                        f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{release_date}')")
+                except pymysql.MySQLError as e:
+                    print(f"Database error: {e}")
+                try:
+                    cursor.execute(
+                        f"CALL add_book_to_user_list('{username}', '{file_name}', '{book_title}', '{release_date}')")
+                except pymysql.MySQLError as e:
+                    print(f"Database error: {e}")
+            if series != '':
+                try:
+                    cursor.execute(f"CALL add_book_to_series('{book_title}', {release_date}', '{series})")
+                except pymysql.MySQLError as e:
+                    print(f"Database error: {e}")
 
+            if all(field != '' for field in [url, format_type]):
+                try:
+                    cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', {release_date}')")
+                except pymysql.MySQLError as e:
+                    print(f"Database error: {e}")
 
+            for i in range(10, 13):
+                if row[i] != '':
+                    genre_name = row[i]
+                    try:
+                        cursor.execute(f"CALL add_genre_to_book('{book_title}', {release_date},'{genre_name}')")
+                    except pymysql.MySQLError as e:
+                        print(f"Database error: {e}")
+    cursor.close()
 
 
 '''

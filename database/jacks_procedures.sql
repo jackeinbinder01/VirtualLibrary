@@ -115,8 +115,6 @@ END //
 
 DELIMITER ;
 
-CALL add_book_to_user_list('jack', 'jacks new book list', 'The Da Vinci Code', '2004-03-01');
-
 DROP PROCEDURE add_book;
 DELIMITER //
 
@@ -270,10 +268,6 @@ BEGIN
 
 END //
 DELIMITER ;
-
-CALL add_book_from_import("Jack's Big Black Book", 'Too big for most', 'jack the author',
-              'jacktheauthor@jack,jack', 'jack the publisher', 'jacktheauthor@jack,jack', '2024-01-01');
-
 
 DROP PROCEDURE IF EXISTS add_author;
 
