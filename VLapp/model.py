@@ -2,6 +2,8 @@ import pymysql
 import datetime
 import csv
 from tabulate import tabulate
+import tkinter as tk
+from tkinter import filedialog
 
 
 def connect_to_database():
@@ -212,7 +214,7 @@ def search_menu(current_list=None):
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\nr. return to main menu\n")
+    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\n5. import a book list from a csv file\nr. return to main menu\n")
     return answer
 
 def application_logic(connection, username):
@@ -311,6 +313,9 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '4':
             export_user_book_list(connection, username)
+
+        elif list_menu_answer.strip() == '5':
+            import_book_list_from_csv(connection, username)
 
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
@@ -621,6 +626,29 @@ def export_book_list_to_csv(book_list_name, books):
         print(f"\nBook list successfully exported to {file_name}")
     except Exception as e:
         print(f"An error occured while exporting the book list: {e}")
+
+def import_book_list_from_csv(connection, username):
+    """
+    Imports books and a book list from a csv file into the book and book_list tables in db.
+
+    Opens tkinter file chooser and prompts the user to choose the book list csv to import.
+
+    :param connection: connection to MySQL database
+    :param username: user's account name
+    """
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename(
+        title="Please select a CSV file to import",
+        filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+    )
+
+    with open(file_path, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for row in reader:
+            print(row)
+
 
 '''
 Helper function that prints books in tabular format
