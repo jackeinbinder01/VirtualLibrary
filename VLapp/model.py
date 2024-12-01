@@ -56,7 +56,7 @@ def login_options(connection):
             while True:
                 username = create_user(connection)
                 if username != False:
-                    print("account created, you have been automatically logged in")
+                    print("Account created! You have been automatically logged in")
                     return username
                 else:
                     retry = input("Try again y/n")
