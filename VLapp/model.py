@@ -7,9 +7,14 @@ from PyQt5.QtWidgets import QApplication, QFileDialog
 
 
 def connect_to_database():
+    """
+    Handles connects to MySQL the database.
+
+    :return: None if user does not want to reconnect
+    """
     while True:
-        username = input("Enter your username: ").strip()
-        pword = input("Enter your password: ").strip()
+        username = input("Enter your MySQL username: ").strip()
+        pword = input("Enter your MySQL password: ").strip()
         try:
             connection = pymysql.connect(
                 host='localhost',
@@ -19,26 +24,28 @@ def connect_to_database():
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=True
             )
-            print("Connection Successful")
+            print("\nConnection Successful!\n"
+                  "Welcome to the Virtual Library!\n")
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            retry = input("Would you like to try again? (y/n): ").strip().lower()
+            retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
             if retry != 'y':
                 return None
 
 def login_options(connection):
     while True:
-        answer = input("enter a value based on the prompt below\n"
-                       "1. Login to an existing account"
-                       "\n2. Create a new account\nq to quit\n")
+        answer = input("Please login or create a new account:\n"
+                       "\n1. Login to an existing account."
+                       "\n2. Create a new account.\n"
+                       "\nEnter 'q' to quit.\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
             while True:
                 username = login_user(connection)
                 if username != False:
-                    print("login successful")
+                    print(f"\nWelcome back, {username}!\n")
                     return username
                 else:
                     retry = input("Try again y/n")
@@ -59,8 +66,8 @@ def login_options(connection):
             print("invalid input please try again")
 
 def get_username_password():
-    username = input("please enter the username: ")
-    password = input("please enter the password: ")
+    username = input("Please enter your Virtual Library username: ")
+    password = input("Please enter your Virtual Library password: ")
     return username, password
 
 def create_user(connection):
@@ -113,7 +120,6 @@ def login_user(connection):
 
         # Extract the login status
         login_status = result["login_status"]
-        print(f"Login Status: {login_status}")
 
         # Return username if login is successful
         if login_status == "Login Successful":
@@ -195,10 +201,11 @@ def get_search_param(username):
     ]
     return search_param
 
-def main_menu(username):
-    print("welcome to the main menu!")
-    answer = input(f"Would you like to search for books or manage your lists {username}"
-                   "\n1. Search for books\n2. Manage lists\nq to quit\n")
+def main_menu():
+    answer = input(f"Please select from the following options:\n"
+                   "\n1. Search the Virtual Library for books."
+                   "\n2. Manage my saved book lists."
+                   "\n\nEnter 'q' to quit\n")
     return answer
 
 
@@ -221,7 +228,7 @@ def application_logic(connection, username):
     leave = True
     while leave: 
         connection.commit()
-        main_menu_answer = main_menu(username)
+        main_menu_answer = main_menu()
 
         # Quit from main menu
         if main_menu_answer.strip().lower() == 'q':
