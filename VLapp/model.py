@@ -3,7 +3,7 @@ import pymysql
 import csv
 from tabulate import tabulate
 from PyQt5.QtWidgets import QApplication, QFileDialog
-
+from dateutil.parser import parse
 
 
 def connect_to_database():
