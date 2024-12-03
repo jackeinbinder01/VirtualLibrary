@@ -673,16 +673,16 @@ def import_book_list_from_csv(connection, username):
                       f"in the Virtual Library  README.\n")
                 return
             for row in reader:
-                book_title = row[0].strip
-                release_date = row[1].strip
-                author_name = row[2].strip
-                author_email = row[3].strip
-                publisher_name = row[4].strip
-                publisher_email = row[5].strip
-                description = row[6].strip
-                series = row[7].strip
-                url = row[8].strip
-                format_type = row[9].strip
+                book_title = row[0]
+                release_date = row[1]
+                author_name = row[2]
+                author_email = row[3]
+                publisher_name = row[4]
+                publisher_email = row[5]
+                description = row[6]
+                series = row[7]
+                url = row[8]
+                format_type = row[9]
 
                 if any(field == '' for field in [book_title, release_date, author_name,
                                                  author_email, publisher_name, publisher_email]):
