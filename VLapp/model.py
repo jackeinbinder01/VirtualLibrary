@@ -684,6 +684,8 @@ def import_book_list_from_csv(connection, username):
                 url = row[8]
                 format_type = row[9]
 
+                if release_date
+
                 if any(field == '' for field in [book_title, release_date, author_name,
                                                  author_email, publisher_name, publisher_email]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
