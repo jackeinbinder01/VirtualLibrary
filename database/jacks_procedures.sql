@@ -126,7 +126,7 @@ BEGIN
     DECLARE future_release_date_error VARCHAR(128);
 
     SET book_in_db_error = CONCAT('Book: ', book_title_p, ', already exists in the book table.');
-    SET future_release_date_error = CONCAT('Future release date: ,', release_date_p, ', is invalid.');
+    SET future_release_date_error = CONCAT('Future release date: , ', release_date_p, ', is invalid.');
 
     IF release_date_p > NOW() THEN
         SIGNAL SQLSTATE '45000'

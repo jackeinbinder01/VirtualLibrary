@@ -1,9 +1,9 @@
 import os
 import pymysql
 import csv
+from datetime import datetime
 from tabulate import tabulate
 from PyQt5.QtWidgets import QApplication, QFileDialog
-from dateutil.parser import parse
 
 
 def connect_to_database():
@@ -684,7 +684,16 @@ def import_book_list_from_csv(connection, username):
                 url = row[8]
                 format_type = row[9]
 
-                if release_date
+                try:
+                    parsed_release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
+                except ValueError:
+                    print(f"\nImport Error: '{release_date}' is not a valid release date format. Please use the date "
+                          f"format: 'yyyy-mm-dd'\n")
+
+                current_date = datetime.now().date()
+                if parsed_release_date > current_date:
+                    print(f"\nImport Error: Future release date: '{parsed_release_date}' is invalid.\n")
+                    return
 
                 if any(field == '' for field in [book_title, release_date, author_name,
                                                  author_email, publisher_name, publisher_email]):
