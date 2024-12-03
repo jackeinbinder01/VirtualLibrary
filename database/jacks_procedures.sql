@@ -123,10 +123,15 @@ CREATE PROCEDURE add_book(book_title_p VARCHAR(256), description_p TEXT, author_
 
 BEGIN
     DECLARE book_in_db_error VARCHAR(64);
+    DECLARE release_date_error VARCHAR(128);
 
     SET book_in_db_error = CONCAT('book: ', book_title_p, ', already exists in the book table');
+    SET release_date_error = CONCAT('inputted release date: ', release_date_p, 'is not a valid book release date');
 
-    IF EXISTS (
+    IF CAST(release_date_p AS DATE) IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = release_date_error;
+    ELSEIF EXISTS (
         SELECT
             1 AS 'book in db'
         FROM book b

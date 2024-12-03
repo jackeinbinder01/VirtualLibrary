@@ -660,28 +660,35 @@ def import_book_list_from_csv(connection, username):
 
     file_name = os.path.basename(file_path)
     book_list_name = os.path.splitext(file_name)[0]
-    print(book_list_name)
     cursor = connection.cursor()
 
     try:
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-            next(reader)
+            header = next(reader)
+            if header != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
+                          'publisher_email', 'description', 'series', 'url', 'format_type', 'genre_1',
+                          'genre_2', 'genre_3']:
+                print(f"\nImport error: Invalid csv! Please use the csv import template provided "
+                      f"in the Virtual Library  README.\n")
+                return
             for row in reader:
-                book_title = row[0]
-                release_date = row[1]
-                author_name = row[2]
-                author_email = row[3]
-                publisher_name = row[4]
-                publisher_email = row[5]
-                description = row[6]
-                series = row[7]
-                url = row[8]
-                format_type = row[9]
+                book_title = row[0].strip
+                release_date = row[1].strip
+                author_name = row[2].strip
+                author_email = row[3].strip
+                publisher_name = row[4].strip
+                publisher_email = row[5].strip
+                description = row[6].strip
+                series = row[7].strip
+                url = row[8].strip
+                format_type = row[9].strip
 
                 if any(field == '' for field in [book_title, release_date, author_name,
                                                  author_email, publisher_name, publisher_email]):
-                    print("Invalid, missing required fields")
+                    print("\nImport Error: csv template is missing some required fields. Please populate all required "
+                          "fields as detailed in the Virtual Library README.\n")
+                    return
                 else:
                     try:
                         cursor.execute(
