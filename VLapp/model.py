@@ -4,6 +4,7 @@ import csv
 from datetime import datetime
 from tabulate import tabulate
 from PyQt5.QtWidgets import QApplication, QFileDialog
+from dateutil.parser import parse
 
 
 def connect_to_database():
@@ -29,14 +30,9 @@ def connect_to_database():
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            while True:
-                retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
-                if retry == 'y':
-                    break
-                if retry == 'n':
-                    return None
-                
-            
+            retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
+            if retry != 'y':
+                return None
 
 def login_options(connection):
     while True:
@@ -219,7 +215,7 @@ def search_menu(current_list=None):
     answer = input("1. if you would like to search for books by genre, publisher,"
                 " author name, book name, or series name\n2. to add a specific book by book id"
                 " to a list\n3. to remove a specific book by book id\n4. add/update a rating on a"
-                " book by book id\nr to return to main menu\n")
+                " book by book id\nq to return to main menu\n")
     return answer
 
 
@@ -257,7 +253,7 @@ def search_logic(connection, username):
         search_menu_answer = search_menu(username)
 
         # Quit to main menu
-        if search_menu_answer.strip().lower() == 'r':
+        if search_menu_answer.strip().lower() == 'q':
             print("Returning to main menu...")
             break
 
@@ -671,7 +667,7 @@ def import_book_list_from_csv(connection, username):
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            if header != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
+            if header[:12] != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
                           'publisher_email', 'description', 'series', 'url', 'format_type', 'genre_1',
                           'genre_2', 'genre_3']:
                 print(f"\nImport error: Invalid csv! Please use the csv import template provided "
@@ -694,6 +690,8 @@ def import_book_list_from_csv(connection, username):
                 except ValueError:
                     print(f"\nImport Error: '{release_date}' is not a valid release date format. Please use the date "
                           f"format: 'yyyy-mm-dd'\n")
+
+                    print(parsed_release_date)
 
                 current_date = datetime.now().date()
                 if parsed_release_date > current_date:
