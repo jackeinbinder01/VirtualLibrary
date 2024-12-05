@@ -489,9 +489,9 @@ BEGIN
             1
         FROM user u
         WHERE u.user_name = username_p
-    ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = username_not_in_db_error;
+	    ) THEN
+	        SIGNAL SQLSTATE '45000'
+	        SET MESSAGE_TEXT = username_not_in_db_error;
     ELSEIF EXISTS (
         SELECT
             1
@@ -513,4 +513,32 @@ BEGIN
 END //
 
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS update_username;
+DELIMITER //
+
+CREATE PROCEDURE update_username(old_username_p VARCHAR(64), new_username_p VARCHAR(64))
+
+BEGIN
+	 DECLARE username_not_in_db_error VARCHAR(64);
+	 SET username_not_in_db_error = CONCAT('User, ', old_username_p, ', does not exist');
+
+	 IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = old_username_p
+        ) THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = username_not_in_db_error;
+     ELSE
+	     UPDATE user u
+	        SET u.user_name = new_username_p
+	     WHERE u.user_name = old_username_p;
+	 END IF;
+END //
+
+DELIMITER ;
+
+
 
