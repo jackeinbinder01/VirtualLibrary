@@ -3,8 +3,9 @@ import os
 import pymysql
 import csv
 from datetime import datetime
-from tabulate import tabulate
+import tabulate
 from PyQt6.QtWidgets import QApplication, QFileDialog
+import sys
 
 
 def connect_to_database():
@@ -227,23 +228,51 @@ def admin_main_menu():
 def manage_users_menu(connection):
     print("\nWelcome to the Manage Users Menu!")
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Create a user account"
-                   "\n2. Delete a user account"
-                   "\n3. Update a user's information"
-                   "\n4. Make a user an Admin"
-                   "\n5. Demote a user from Admin"
+                   "\n1. View users in database"
+                   "\n2. Create a user account"
+                   "\n3. Delete a user account"
+                   "\n4. Update a user's information"
+                   "\n5. Make a user an Admin"
+                   "\n6. Demote a user from Admin"
                    "\nr. Return to main menu\n\n")
-    match answer:
+    match answer.lower():
         case '1':
-            admin_create_user(connection)
+            view_users(connection)
         case '2':
-            admin_delete_user(connection)
+            admin_create_user(connection)
         case '3':
-            admin_update_user_information(connection)
+            admin_delete_user(connection)
         case '4':
-            make_user_admin(connection)
+            admin_update_user_information(connection)
         case '5':
+            make_user_admin(connection)
+        case '6':
             demote_user_from_admin(connection)
+        case 'r':
+            admin_main_menu()
+
+
+def view_users(connection):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("CALL view_users()")
+        result_tuples = cursor.fetchall()
+        if not result_tuples:
+            print("View users error: No users found in database.")
+        else:
+            if not result_tuples:
+                print("View users error: No users found in database.")
+            else:
+                clean_data = [
+                    {key: ('True' if key == 'is_admin' and value == 1 else value) for key, value in row.items()}
+                    for row in result_tuples
+                ]
+                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
+                print(f'{table}')
+                manage_users_menu(connection)
+    except pymysql.Error as e:
+        code, msg = e.args
+        print(f"View users error: {code} - {msg}")
 
 
 def admin_create_user(connection):
@@ -278,6 +307,7 @@ def admin_delete_user(connection):
     except pymysql.Error as e:
         print(f"\nDelete user error: {e}\n")
 
+
 def admin_update_user_information(connection):
     answer = input(f"\nPlease select from the following options:\n"
                    "\n1. Update a user's username"
@@ -291,11 +321,11 @@ def admin_update_user_information(connection):
             new_username = input("Enter the user's new username: ").strip()
 
             if old_username == new_username:
-                print("\nUpdate User Error: New username must be different than the original username.")
+                print("\nUpdate user error: New username must be different than the original username.")
                 admin_update_user_information(connection)
                 return
             if new_username == '':
-                print("\nUpdate User Error: New username cannot be blank.")
+                print("\nUpdate user error: New username cannot be blank.")
                 admin_update_user_information(connection)
                 return
 
@@ -310,8 +340,17 @@ def admin_update_user_information(connection):
             new_password = input("Enter the user's new password: ").strip()
 
             if new_password == '':
-                print("\nUpdate User Error: New password cannot be blank.")
+                print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
+                return
+
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_password('{username}', '{new_password}')")
+                print(f"\nSuccessfully updated {username}'s password!\n")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
+
         case '3':
             old_username = input("Enter the user's old username: ").strip()
             new_username = input("Enter the user's new username: ").strip()
@@ -320,17 +359,34 @@ def admin_update_user_information(connection):
             if old_username == new_username:
                 print("\nUpdate user error: New username must be different than the original username.")
                 admin_update_user_information(connection)
+                return
             if new_username == '':
                 print("\nUpdate user error: New username cannot be blank.")
                 admin_update_user_information(connection)
+                return
             if new_password == '':
                 print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
+                return
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_username('{old_username}', '{new_username}')")
+                print(f"\nSuccessfully updated username '{old_username}' to '{new_username}'!")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
+
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_password('{new_username}', '{new_password}')")
+                print(f"Successfully updated {new_username}'s password!\n")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
         case 'r':
             manage_users_menu(connection)
         case _:
             print(f"\nInvalid option '{answer}'. Please try again.")
             admin_update_user_information(connection)
+
 
 def make_user_admin(connection):
     username = input("Enter the user's username: ").strip()
@@ -402,12 +458,28 @@ def manage_menu(username):
     return answer
 
 
+def is_user_admin(connection, username):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT is_user_admin('{username}')")
+
+        result = cursor.fetchone()
+        key = f"is_user_admin('{username}')"
+
+        user_is_admin = result[key] if result else False
+        return user_is_admin
+    except Exception as e:
+        print(f"Admin check error: {e}")
+        return False
+
+
 def application_logic(connection, username):
     leave = True
     while leave:
         connection.commit()
 
-        user_is_admin = True
+        user_is_admin = is_user_admin(connection, username)
+
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:
@@ -860,7 +932,21 @@ Helper function that exports a given book list to a CSV file
 
 def export_book_list_to_csv(book_list_name, books):
     try:
-        file_name = f"{book_list_name.replace(' ', '_')}_book_list.csv"
+        # Initialize the application for the file dialog
+        app = QApplication(sys.argv)
+
+        # Open a file dialog to get the file path
+        file_name, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save Book List As",
+            f"{book_list_name.replace(' ', '_')}_book_list.csv",
+            "CSV Files (*.csv);;All Files(*)"
+        )
+
+        # Exit if user cancels the save operation
+        if not file_name:
+            print("\nExport canceled.")
+            return
 
         # Write book data to the CSV file
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
