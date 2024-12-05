@@ -755,9 +755,9 @@ def create_user_book_list(connection, user_name, book_list_name):
             # print(f"Procedure result: {result}")
 
             if result and 'status_message' in result:
-                return result['status_message']
-            else:
-                return "No status message returned."
+                return result['status_message\n']
+            # else:
+            #     return "No status message returned."
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         return None
@@ -1025,15 +1025,15 @@ def import_book_list_from_csv(connection, username):
                       f"in the Virtual Library README.\n")
                 return
             for row in reader:
-                book_title = row[0]
+                book_title = row[0].replace("'", '')
                 release_date = row[1]
-                author_name = row[2]
-                publisher_name = row[3]
-                author_email = row[4]
-                publisher_email = row[5]
-                series = row[6]
-                url = row[7]
-                format_type = row[8]
+                author_name = row[2].replace("'", '')
+                publisher_name = row[3].replace("'", '')
+                author_email = row[4].replace("'", '')
+                publisher_email = row[5].replace("'", '')
+                series = row[6].replace("'", '')
+                url = row[7].replace("'", '')
+                format_type = row[8].replace("'", '')
 
                 formatted_release_date = parse_date(release_date)
 
@@ -1076,7 +1076,7 @@ def import_book_list_from_csv(connection, username):
                         print(f"Attempted add url: {e}")
 
                 for i in range(9, 12):
-                    genre_name = row[i]
+                    genre_name = row[i].replace("'", '')
                     if genre_name:
                         try:
                             cursor.execute(
