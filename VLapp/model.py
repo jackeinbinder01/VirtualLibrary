@@ -208,8 +208,24 @@ def main_menu():
     answer = input(f"Please select from the following options:\n"
                    "\n1. Search the Virtual Library for books."
                    "\n2. Manage my saved book lists."
-                   "\n\nEnter 'q' to quit\n")
+                   "\nq. to quit\n")
     return answer
+
+def admin_main_menu():
+    answer = input(f"Please select from the following options:\n"
+                   "\n1. Search the Virtual Library for books."
+                   "\n2. Manage my saved book lists."
+                   "\n3. Manage users\n"
+                   "\nq. to quit\n")
+    return answer
+
+def manage_users_menu():
+    answer = input(f"Please select from the following options:\n"
+                   "\n1. Delete a user\n."
+                   "\n2. Manage my saved book lists."
+                   "\n3. Manage users\n"
+                   "\nq. to quit\n")
+
 
 
 def search_menu(current_list=None):
@@ -229,10 +245,13 @@ def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
     answer = input(
-        "1. Create a new book list\n2. View you saved book lists\n"
-        "3. Delete a book list\n4. Export book list to csv file\n"
-        "5. Import a book list from a csv file\n6. View the analysis menu\n"
-        "\nr. return to main menu\n")
+        "1. Create a new book list\n"
+        "2. View my book lists\n"
+        "3. Delete an existing book list\n"
+        "4. Export a book list to csv file\n"
+        "5. Import a book list from a csv file\n"
+        "6. View the analysis menu\n"
+        "r. Return to main menu\n")
     return answer
 
 
@@ -240,7 +259,13 @@ def application_logic(connection, username):
     leave = True
     while leave:
         connection.commit()
-        main_menu_answer = main_menu()
+
+        user_is_admin = False
+        if user_is_admin:
+            main_menu_answer = admin_main_menu()
+        else:
+            main_menu_answer = main_menu()
+
 
         # Quit from main menu
         if main_menu_answer.strip().lower() == 'q':
