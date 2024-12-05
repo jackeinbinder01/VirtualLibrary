@@ -796,7 +796,7 @@ def print_list_names_of_user(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s saved book lists: ")
+                print(f"\n{username}'s saved book lists:\n")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
                 return
