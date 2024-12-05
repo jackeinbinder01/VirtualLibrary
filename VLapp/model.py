@@ -419,7 +419,7 @@ def make_user_admin(connection, admin_user_name):
         print(f"\nMake user admin error: {e}\n")
 
 
-def demote_user_from_admin(connection):
+def demote_user_from_admin(connection, admin_user_name):
     username = input("Enter the user's username: ").strip()
 
     if username == '':
