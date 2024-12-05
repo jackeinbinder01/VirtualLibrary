@@ -4,16 +4,15 @@ import sys
 from datetime import datetime
 
 import pymysql
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
-from VirtualLibrary.VLapp.model import manage_menu, create_user_book_list, add_book_by_id_logic, \
-    remove_book_by_id_logic, print_books_tabular
-
+import model
+import search
 
 def manage_lists_logic(connection, username):
     while True:
         connection.commit()
-        list_menu_answer = manage_menu(username)
+        list_menu_answer = model.manage_menu(username)
 
         if list_menu_answer.strip() == '1':
             book_list_name = input("\nEnter the name of the book list you wish to create: \n")
@@ -23,7 +22,7 @@ def manage_lists_logic(connection, username):
                 continue
 
             # Call function that calls stored procedure to create new book list
-            status_message = create_user_book_list(connection, username, book_list_name)
+            status_message = model.create_user_book_list(connection, username, book_list_name)
 
             # Display the status message returned by the procedure
             if status_message:
@@ -38,10 +37,10 @@ def manage_lists_logic(connection, username):
             delete_book_list(connection, username)
 
         elif list_menu_answer.strip() == '4':
-            add_book_by_id_logic(connection, username)
+            search.add_book_by_id_logic(connection, username)
 
         elif list_menu_answer.strip() == '5':
-            remove_book_by_id_logic(connection, username)
+            search.remove_book_by_id_logic(connection, username)
 
         elif list_menu_answer.strip() == '6':
             export_user_book_list(connection, username)
@@ -122,7 +121,7 @@ def fetch_books_in_list(connection, username, book_list_name):
 
             # Display books using the print_books helper function
             if books:
-                print_books_tabular(books)
+                model.print_books_tabular(books)
             else:
                 print(f"No books found in the book list '{book_list_name}'.")
 
@@ -377,7 +376,7 @@ def operate_on_user_book_lists(connection, username, operation):
                     create_new_list = input(f"No book lists found for the user '{username}'. Create new list? (y/n)\n")
                     if (create_new_list.strip().lower() == "y"):
                         list_name = input("What is the name of the new list?\n")
-                        create_user_book_list(connection, username, list_name)
+                        model.create_user_book_list(connection, username, list_name)
                         return list_name
                     else:
                         return 0
