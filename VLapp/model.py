@@ -206,28 +206,30 @@ def get_search_param(username):
 
 def main_menu():
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books."
-                   "\n2. Manage my saved book lists."
-                   "\n3. View analysis menu"
-                   "\nq. to quit\n")
+                   "\n1. Search the Virtual Library for books"
+                   "\n2. Manage my saved book lists"
+                   "\n3. View user analytics"
+                   "\nq. Quit\n\n")
     return answer
+
 
 def admin_main_menu():
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books."
-                   "\n2. Manage my saved book lists."
-                   "\n3. View analysis menu"
+                   "\n1. Search the Virtual Library for books"
+                   "\n2. Manage my saved book lists"
+                   "\n3. View user analytics"
                    "\n4. Manage users\n"
-                   "\nq. Quit\n")
+                   "\nq. Quit\n\n")
     return answer
 
-def manage_users_menu(connection, username):
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. Create a user account\n."
-                   "\n2. Delete a user account\n."
-                   "\n3. Update user information\n"
-                   "\nq. Quit\n")
 
+def manage_users_menu(connection):
+    print("\nWelcome to the Manage Users Menu!")
+    answer = input(f"Please select from the following options:\n"
+                   "\n1. Create a user account"
+                   "\n2. Delete a user account"
+                   "\n3. Update user information"
+                   "\nr. Return to main menu\n\n")
     match answer:
         case '1':
             admin_create_user(connection)
@@ -236,14 +238,75 @@ def manage_users_menu(connection, username):
         case '3':
             admin_update_user_information(connection)
 
+
 def admin_create_user(connection):
-    pass
+    username = input("Enter the user's username: ").strip()
+    password = input("Enter the user's password: ").strip()
+
+    if username == '' or password == '':
+        print("\nCreate User Error: Username and/or password cannot be blank")
+        manage_users_menu(connection)
+        return
+
+    print(f"\nCreate account for user: '{username}' with password: '{password}'\n")
+
 
 def admin_delete_user(connection):
-    pass
+    username = input("Enter the username of the user to delete: ").strip()
+
+    if username == '':
+        print("\nDelete User Error: Username cannot be blank.")
+        manage_users_menu(connection)
+        return
+
+    print(f"\nDelete account for user: '{username}'\n")
+
 
 def admin_update_user_information(connection):
-    pass
+    answer = input(f"\nPlease select from the following options:\n"
+                   "\n1. Update a user's username"
+                   "\n2. Update a user's password"
+                   "\n3. Update a user's username and password"
+                   "\nr. Return to the Manage Users Menu\n\n")
+
+    match answer.lower():
+        case '1':
+            old_username = input("Enter the user's old username: ").strip()
+            new_username = input("Enter the user's new username: ").strip()
+
+            if old_username == new_username:
+                print("\nUpdate User Error: New username must be different than the original username.")
+                admin_update_user_information(connection)
+            if new_username == '':
+                print("\nUpdate User Error: New username cannot be blank.")
+                admin_update_user_information(connection)
+
+        case '2':
+            username = input("Enter the user's username: ").strip()
+            new_password = input("Enter the user's new password: ").strip()
+
+            if new_password == '':
+                print("\nUpdate User Error: New password cannot be blank.")
+                admin_update_user_information(connection)
+        case '3':
+            old_username = input("Enter the user's old username: ").strip()
+            new_username = input("Enter the user's new username: ").strip()
+            new_password = input("Enter the user's new password: ").strip()
+
+            if old_username == new_username:
+                print("\nUpdate User Error: New username must be different than the original username.")
+                admin_update_user_information(connection)
+            if new_username == '':
+                print("\nUpdate User Error: New username cannot be blank.")
+                admin_update_user_information(connection)
+            if new_password == '':
+                print("\nUpdate User Error: New password cannot be blank.")
+                admin_update_user_information(connection)
+        case 'r':
+            manage_users_menu(connection)
+        case _:
+            print(f"\nInvalid option '{answer}'. Please try again.")
+            admin_update_user_information(connection)
 
 
 def search_menu(current_list=None):
@@ -277,12 +340,11 @@ def application_logic(connection, username):
     while leave:
         connection.commit()
 
-        user_is_admin = False
+        user_is_admin = True
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:
             main_menu_answer = main_menu()
-
 
         # Quit from main menu
         if main_menu_answer.strip().lower() == 'q':
@@ -295,14 +357,14 @@ def application_logic(connection, username):
 
         elif main_menu_answer.strip() == "2":  # Manage Lists
             manage_lists_logic(connection, username)
-   
+
         elif main_menu_answer.strip() == '3':
             analysis_logic(connection, username)
-            
+
         elif main_menu_answer.strip() == "4" and user_is_admin:
             manage_users_menu(connection, username)
-            
-        
+
+
 
         else:
             print("Invalid input. Please try again.")
@@ -332,8 +394,8 @@ def search_logic(connection, username):
 
         elif search_menu_answer.strip() == '5':  # Add a URL to the database
             add_url_to_db(connection)
-            
-        elif search_menu_answer.strip() == '6': # go to analysis menu
+
+        elif search_menu_answer.strip() == '6':  # go to analysis menu
             analysis_logic(connection, username)
         else:
             print("Invalid input. Please try again.")
@@ -440,6 +502,7 @@ def rate_book(username, book_id, score, comment, connection):
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
 
+
 def add_url_to_db(connection):
     book_name = input("Enter the name of the book that the URL links to: ")
     book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
@@ -474,6 +537,7 @@ def add_url_to_db(connection):
         print("\nURL added successfully!")
     except pymysql.Error as e:
         print(f"\nURL could not be added: {e}")
+
 
 def add_book_by_id_logic(connection, username):
     correct_book_bool = False
@@ -1085,51 +1149,51 @@ def delete_book_list(connection, username):
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
-        
+
+
 def analysis_logic(connection, username):
     leave = True
     while leave:
-            # if user is an admin the check will be here and it will allow
-            # a user to see all usernames and pass in one as an arguement
-            # to the other functions!
-            analysis_input = analysis_menu(connection, username).strip().lower()
-            
-            if analysis_input == '1':
-                user_genre_analysis(connection, username)
-            elif analysis_input == '2':
-                user_most_read_genre_analysis(connection, username)
-            elif analysis_input == "3":
-                user_book_count_analysis(connection, username)
-            elif analysis_input == '4':
-                user_author_analysis(connection, username)
-            elif analysis_input == "5":
-                user_most_read_author_analysis(connection, username)  
-                
-            elif analysis_input == 'r':
-                return
-            
+        # if user is an admin the check will be here and it will allow
+        # a user to see all usernames and pass in one as an arguement
+        # to the other functions!
+        analysis_input = analysis_menu(connection, username).strip().lower()
+
+        if analysis_input == '1':
+            user_genre_analysis(connection, username)
+        elif analysis_input == '2':
+            user_most_read_genre_analysis(connection, username)
+        elif analysis_input == "3":
+            user_book_count_analysis(connection, username)
+        elif analysis_input == '4':
+            user_author_analysis(connection, username)
+        elif analysis_input == "5":
+            user_most_read_author_analysis(connection, username)
+
+        elif analysis_input == 'r':
+            return
+
 
 def analysis_menu(connection, username):
     user = username
     print(f"Welcome to the analysis menu")
 
-    
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
-                            f"\n2. View {user}'s most read genre"
-                            f"\n3. View the number of unique books"
-                            f"\n4. View authors across all {user}'s lists"
-                            f"\n5. View {user}'s most read author"
-                            "\n\nr. to return to managment menu\n"
-                            )
+                           f"\n2. View {user}'s most read genre"
+                           f"\n3. View the number of unique books"
+                           f"\n4. View authors across all {user}'s lists"
+                           f"\n5. View {user}'s most read author"
+                           "\n\nr. to return to managment menu\n"
+                           )
     return analysis_input
-        
-        
+
+
 def user_genre_analysis(connection, username):
     try:
         with connection.cursor() as genre_analysis:
             genre_analysis.callproc("FetchUserGenres", (username,))
             result = genre_analysis.fetchall()
-            
+
             if not result:
                 print(f"There are no books in your lists {username}!")
                 return
@@ -1139,16 +1203,17 @@ def user_genre_analysis(connection, username):
                 print(f"- {genre}")
             print("\n")
             return
-        
+
     except Exception as e:
         print(f"Unexpected error: {e}")
-        
+
+
 def user_most_read_genre_analysis(connection, username):
     try:
         with connection.cursor() as most_read_genre_analysis:
             most_read_genre_analysis.callproc("MostReadGenre", (username,))
             result = most_read_genre_analysis.fetchall()
-            
+
             if len(result) > 1:
                 print(f" {username}'s most read genres are\n")
                 for genre in result:
@@ -1161,12 +1226,13 @@ def user_most_read_genre_analysis(connection, username):
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+
 def user_author_analysis(connection, username):
     try:
         with connection.cursor() as author_analysis:
             author_analysis.callproc("AuthorDiversity", (username,))
             result = author_analysis.fetchall()
-            
+
             if not result:
                 print(f"There are no books in your lists {username}!")
                 return
@@ -1180,12 +1246,13 @@ def user_author_analysis(connection, username):
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+
 def user_most_read_author_analysis(connection, username):
     try:
         with connection.cursor() as most_read_author:
             most_read_author.callproc("TopAuthor", (username,))
             result = most_read_author.fetchall()
-            
+
             if len(result) > 1:
                 print(f"{username}'s most read genres are\n")
                 for author in result:
@@ -1197,22 +1264,23 @@ def user_most_read_author_analysis(connection, username):
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
-        
+
+
 def user_book_count_analysis(connection, username):
     try:
         with connection.cursor() as book_num_analysis:
             book_num_analysis.callproc("CountUserBooks", (username,))
             result = book_num_analysis.fetchall()
-            
+
             total_books = result[0].get("total_unique_books")
             book = "books"
             if total_books == 1:
                 book = "book"
             print(f"You have a total of {total_books} {book} in your lists\n\n")
-        
+
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+
 def user_format_analysis(connection, username):
     pass
-    
