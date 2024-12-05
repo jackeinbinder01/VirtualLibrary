@@ -447,7 +447,7 @@ def search_menu(current_list=None):
 
 
 def manage_menu(username):
-    print("welcome to the management menu!")
+    print("Welcome to the management menu!")
     # model.print_user_lists_names(username)
     answer = input(
         "1. Create a new book list\n"
@@ -1018,23 +1018,22 @@ def import_book_list_from_csv(connection, username):
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            if header != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
-                          'publisher_email', 'description', 'series', 'url', 'format_type', 'genre_1',
+            if header != ['book_title', 'release_date', 'author_name',  'publisher_name',
+                          'author_email', 'publisher_email', 'series', 'url', 'format_type', 'genre_1',
                           'genre_2', 'genre_3']:
                 print(f"\nImport error: Invalid csv! Please use the csv import template provided "
-                      f"in the Virtual Library  README.\n")
+                      f"in the Virtual Library README.\n")
                 return
             for row in reader:
                 book_title = row[0]
                 release_date = row[1]
                 author_name = row[2]
-                author_email = row[3]
-                publisher_name = row[4]
+                publisher_name = row[3]
+                author_email = row[4]
                 publisher_email = row[5]
-                description = row[6]
-                series = row[7]
-                url = row[8]
-                format_type = row[9]
+                series = row[6]
+                url = row[7]
+                format_type = row[8]
 
                 formatted_release_date = parse_date(release_date)
 
@@ -1046,14 +1045,14 @@ def import_book_list_from_csv(connection, username):
                     print(f"'{release_date}' is not a valid date.")
                     return
 
-                if any(field == '' for field in [book_title, formatted_release_date, author_name, publisher_name]):
+                if any(field == '' for field in [book_title, release_date, author_name, publisher_name]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
                     return
                 else:
                     try:
                         cursor.execute(
-                            f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
+                            f"CALL add_book_from_import('{book_title}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to db: {e}")
                     try:
@@ -1075,7 +1074,7 @@ def import_book_list_from_csv(connection, username):
                     except pymysql.MySQLError as e:
                         print(f"Attempted add url: {e}")
 
-                for i in range(10, 13):
+                for i in range(9, 12):
                     genre_name = row[i]
                     if genre_name:
                         try:
@@ -1328,14 +1327,15 @@ def analysis_logic(connection, username):
 
 def analysis_menu(connection, username):
     user = username
-    print(f"Welcome to the analysis menu")
+    print(f"Welcome to the analysis menu!")
 
-    analysis_input = input(f"\n1. View genres across all {user}'s lists"
+    analysis_input = input(f"Please select from the following options\n"
+                           f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
                            f"\n5. View {user}'s most read author"
-                           "\n\nr. to return to managment menu\n"
+                           f"\nr. Return to managment menu\n"
                            )
     return analysis_input
 
