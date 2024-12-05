@@ -46,7 +46,7 @@ def login_options(connection):
         answer = input("Please login or create a new account:\n"
                        "\n1. Login to an existing account"
                        "\n2. Create a new account"
-                       "\nq. Quit\n")
+                       "\nq. Quit\n\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -448,7 +448,7 @@ def search_menu(current_list=None):
                    "\n3. Remove a specific book by book id"
                    "\n4. Add/update a rating on a book by book id"
                    "\n5. Add a URL to access a copy of a book"
-                   "\n\nr. Return to the main menu\n")
+                   "\n\nr. Return to the main menu\n\n")
     return answer
 
 
@@ -465,7 +465,7 @@ def manage_menu(username):
         "5. Remove a book from a book list\n"
         "6. Export a book list to csv file\n"
         "7. Import a book list from a csv file\n"
-        "r. Return to main menu\n")
+        "r. Return to main menu\n\n")
     return answer
 
 
@@ -1354,7 +1354,7 @@ def analysis_menu(connection, username):
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
                            f"\n5. View {user}'s most read author"
-                           f"\nr. Return to managment menu\n"
+                           f"\nr. Return to managment menu\n\n"
                            )
     return analysis_input
 
