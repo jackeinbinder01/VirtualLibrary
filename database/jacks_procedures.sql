@@ -118,7 +118,7 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS add_book;
 DELIMITER //
 
-CREATE PROCEDURE add_book(book_title_p VARCHAR(256), description_p TEXT, author_id_p INT,
+CREATE PROCEDURE add_book(book_title_p VARCHAR(256), author_id_p INT,
                           publisher_id_p INT, release_date_p DATE)
 
 BEGIN
@@ -142,8 +142,8 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = book_in_db_error;
     ELSE
-        INSERT INTO book(book_title, description, author_id, publisher_id, release_date)
-        VALUES (book_title_p, description_p, author_id_p, publisher_id_p, release_date_p);
+        INSERT INTO book(book_title, author_id, publisher_id, release_date)
+        VALUES (book_title_p, author_id_p, publisher_id_p, release_date_p);
     END IF;
 END //
 
@@ -283,16 +283,16 @@ CREATE PROCEDURE add_author(author_name_p VARCHAR(128), author_email_p VARCHAR(6
 BEGIN
 
     DECLARE author_in_db_error VARCHAR(256);
-    DECLARE email_in_db_error VARCHAR(256);
-    DECLARE blank_param_error VARCHAR(64);
+    DECLARE blank_author VARCHAR(64);
 
     SET author_in_db_error = CONCAT('Author: ', author_name_p, ', already exists in author table.');
-    SET email_in_db_error = CONCAT('The email: ', author_email_p, ', already exists in author table.');
-    SET blank_param_error = CONCAT('Author name or email cannot be blank.');
+    SET blank_author = CONCAT('Author name or email cannot be blank.');
 
-    IF author_name_p = '' OR author_email_p = '' THEN
+    IF author_name_p = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = blank_param_error;
+        SET MESSAGE_TEXT = blank_author;
+    ELSEIF author_email_p = '' THEN
+        SET author_email_p = NULL;
     ELSEIF EXISTS (
         SELECT
             1 AS 'author in db'
@@ -302,15 +302,6 @@ BEGIN
     ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = author_in_db_error;
-    ELSEIF EXISTS (
-        SELECT
-            1 AS 'email in db'
-        FROM author a
-        WHERE 1=1
-        AND a.email_address = author_email_p
-    ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = email_in_db_error;
     ELSE
         INSERT INTO author (author_name, email_address)
         VALUES (author_name_p, author_email_p);
@@ -328,16 +319,16 @@ CREATE PROCEDURE add_publisher(publisher_name_p VARCHAR(128), publisher_email_p 
 BEGIN
 
     DECLARE publisher_in_db_error VARCHAR(256);
-    DECLARE email_in_db_error VARCHAR(256);
-    DECLARE blank_param_error VARCHAR(64);
+    DECLARE blank_publisher_error VARCHAR(64);
 
     SET publisher_in_db_error = CONCAT('Publisher: ', publisher_name_p, ', already exists in publisher table.');
-    SET email_in_db_error = CONCAT('The email: ', publisher_email_p, ', already exists in publisher table.');
-    SET blank_param_error = CONCAT('Publisher name or email cannot be blank.');
+    SET blank_publisher_error = CONCAT('Publisher name cannot be blank.');
 
-    IF publisher_name_p = '' OR publisher_email_p = '' THEN
+    IF publisher_name_p = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = blank_param_error;
+        SET MESSAGE_TEXT = blank_publisher_error;
+    ELSEIF publisher_email_p = '' THEN
+        SET publisher_email_p = NULL;
     ELSEIF EXISTS (
         SELECT
             1 AS 'publisher in db'
@@ -347,15 +338,6 @@ BEGIN
     ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = publisher_in_db_error;
-    ELSEIF EXISTS (
-        SELECT
-            1 AS 'email in db'
-        FROM publisher p
-        WHERE 1=1
-        AND p.email_address = publisher_email_p
-    ) THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = email_in_db_error;
     ELSE
         INSERT INTO publisher (publisher_name, email_address)
         VALUES (publisher_name_p, publisher_email_p);
