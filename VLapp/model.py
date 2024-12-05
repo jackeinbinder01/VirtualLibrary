@@ -216,17 +216,34 @@ def admin_main_menu():
     answer = input(f"Please select from the following options:\n"
                    "\n1. Search the Virtual Library for books."
                    "\n2. Manage my saved book lists."
-                   "\n3. Manage users\n"
-                   "\nq. to quit\n")
+                   "\n3. View analysis menu"
+                   "\n4. Manage users\n"
+                   "\nq. Quit\n")
     return answer
 
-def manage_users_menu():
+def manage_users_menu(connection, username):
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Delete a user\n."
-                   "\n2. Manage my saved book lists."
-                   "\n3. Manage users\n"
-                   "\nq. to quit\n")
+                   "\n1. Create a user account\n."
+                   "\n2. Delete a user account\n."
+                   "\n3. Update user information\n"
+                   "\nq. Quit\n")
 
+    match answer:
+        case '1':
+            admin_create_user(connection)
+        case '2':
+            admin_delete_user(connection)
+        case '3':
+            admin_update_user_information(connection)
+
+def admin_create_user(connection):
+    pass
+
+def admin_delete_user(connection):
+    pass
+
+def admin_update_user_information(connection):
+    pass
 
 
 def search_menu(current_list=None):
@@ -278,9 +295,14 @@ def application_logic(connection, username):
 
         elif main_menu_answer.strip() == "2":  # Manage Lists
             manage_lists_logic(connection, username)
-            
+   
         elif main_menu_answer.strip() == '3':
             analysis_logic(connection, username)
+            
+        elif main_menu_answer.strip() == "4" and user_is_admin:
+            manage_users_menu(connection, username)
+            
+        
 
         else:
             print("Invalid input. Please try again.")
