@@ -271,7 +271,9 @@ def admin_view_users(connection, admin_user_name):
                 print("View users error: No users found in database.")
             else:
                 clean_data = [
-                    {key: ('True' if key == 'is_admin' and value == 1 else 'False') for key, value in row.items()}
+                    {key: ('True' if key == 'is_admin' and value == 1
+                           else 'False' if key == 'is_admin' and value == 0
+                           else value) for key, value in row.items()}
                     for row in result_tuples
                 ]
                 table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
