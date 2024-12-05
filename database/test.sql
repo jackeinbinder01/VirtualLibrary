@@ -6,6 +6,8 @@ SELECT * FROM author;
 
 SELECT * FROM publisher;
 
+INSERT INTO publisher (publisher_name, email_address) VALUES ("JacksTest", NULL);
+
 SELECT * FROM series;
 
 SELECT * FROM book_series;
