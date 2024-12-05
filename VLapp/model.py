@@ -633,11 +633,24 @@ def export_book_list_to_csv(book_list_name, books):
     except Exception as e:
         print(f"An error occured while exporting the book list: {e}")
 
+
+def parse_date(date):
+    formats = ["%Y-%m-%d", "%d-%m-%Y", "%m/%d/%y", "%m/%d/%Y"]
+
+    for each in formats:
+        try:
+            return datetime.strptime(date, each).date()
+        except ValueError:
+            continue
+
+    return None
+
+
 def import_book_list_from_csv(connection, username):
     """
     Imports books and a book list from a csv file into the book and book_list tables in db.
 
-    Opens tkinter file chooser and prompts the user to choose the book list csv to import.
+    Opens file chooser and prompts the user to choose the book list csv to import.
 
     :param connection: connection to MySQL database
     :param username: user's account name
@@ -665,7 +678,7 @@ def import_book_list_from_csv(connection, username):
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            if header[:12] != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
+            if header != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
                           'publisher_email', 'description', 'series', 'url', 'format_type', 'genre_1',
                           'genre_2', 'genre_3']:
                 print(f"\nImport error: Invalid csv! Please use the csv import template provided "
@@ -683,13 +696,19 @@ def import_book_list_from_csv(connection, username):
                 url = row[8]
                 format_type = row[9]
 
-                try:
-                    parsed_release_date = datetime.strptime(release_date, "%Y-%m-%d").date()
-                except ValueError:
-                    print(f"\nImport Error: '{release_date}' is not a valid release date format. Please use the date "
-                          f"format: 'yyyy-mm-dd'\n")
+                parsed_release_date = parse_date(release_date)
 
-                    print(parsed_release_date)
+                if parsed_release_date:
+                    current_date = datetime.now().date()
+                    if parsed_release_date > current_date:
+                        print(f"Future release date: '{parsed_release_date}' is invalid.")
+                    else:
+                        print(f"Valid release date: {parsed_release_date}")
+                else:
+                    print(f"'{release_date}' is not a valid date.")
+                    return
+
+                print(parsed_release_date)
 
                 current_date = datetime.now().date()
                 if parsed_release_date > current_date:
