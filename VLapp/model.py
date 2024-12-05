@@ -283,42 +283,6 @@ def search_logic(connection, username):
             print("Invalid input. Please try again.")
 
 
-def add_url_to_db(connection):
-    book_name = input("Enter the name of the book that the URL links to: ")
-    book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
-    url = input("Enter the URL: ")
-
-    while True:
-        book_format = input("Enter the format of the book: \n"
-                            "\n1. Hardcover\n"
-                            "2. Paperback\n"
-                            "3. PDF\n"
-                            "4. eBook\n"
-                            "5. Audiobook\n\n").strip().lower()
-        valid_formats = {'1': 'Hardcover',
-                         '2': 'Paperback',
-                         '3': 'PDF',
-                         '4': 'eBook',
-                         '5': 'Audiobook',
-                         'hardcover': 'Hardcover',
-                         'paperback': 'Paperback',
-                         'pdf': 'PDF',
-                         'ebook': 'eBook',
-                         'audiobook': 'Audiobook'}
-        if book_format in valid_formats:
-            book_format = valid_formats[book_format]
-            break
-        else:
-            print(f"\nInvalid book format {book_format}. Please try again.")
-
-    cursor = connection.cursor()
-    try:
-        cursor.execute(f"CALL add_link('{url}', '{book_format}', '{book_name}', '{book_release_date}')")
-        print("\nURL added successfully!")
-    except pymysql.Error as e:
-        print(f"\nURL could not be added: {e}")
-
-
 def search_books(connection, username):
     while True:
         search_param = get_search_param(username)
@@ -420,6 +384,40 @@ def rate_book(username, book_id, score, comment, connection):
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
 
+def add_url_to_db(connection):
+    book_name = input("Enter the name of the book that the URL links to: ")
+    book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
+    url = input("Enter the URL: ")
+
+    while True:
+        book_format = input("Enter the format of the book: \n"
+                            "\n1. Hardcover\n"
+                            "2. Paperback\n"
+                            "3. PDF\n"
+                            "4. eBook\n"
+                            "5. Audiobook\n\n").strip().lower()
+        valid_formats = {'1': 'Hardcover',
+                         '2': 'Paperback',
+                         '3': 'PDF',
+                         '4': 'eBook',
+                         '5': 'Audiobook',
+                         'hardcover': 'Hardcover',
+                         'paperback': 'Paperback',
+                         'pdf': 'PDF',
+                         'ebook': 'eBook',
+                         'audiobook': 'Audiobook'}
+        if book_format in valid_formats:
+            book_format = valid_formats[book_format]
+            break
+        else:
+            print(f"\nInvalid book format {book_format}. Please try again.")
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"CALL add_link('{url}', '{book_format}', '{book_name}', '{book_release_date}')")
+        print("\nURL added successfully!")
+    except pymysql.Error as e:
+        print(f"\nURL could not be added: {e}")
 
 def add_book_by_id_logic(connection, username):
     correct_book_bool = False

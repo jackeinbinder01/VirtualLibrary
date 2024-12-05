@@ -2,7 +2,6 @@ USE virtual_library_db;
 
 SELECT * FROM book;
 
-
 SELECT * FROM author;
 
 SELECT * FROM publisher;
@@ -17,18 +16,13 @@ SELECT * FROM genre;
 
 SELECT * FROM book_list;
 
-SELECT * FROM book_genre WHERE book_id = 97;
+SELECT * FROM book_genre;
 
 SELECT * FROM book_list_book;
 
 SELECT * FROM book_rating;
 
 SELECT * FROM link;
-
-SELECT * FROM filtered_book_list;
-
-
-
 
 SELECT DISTINCT
         b.book_id,

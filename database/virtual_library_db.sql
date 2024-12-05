@@ -2,36 +2,30 @@ DROP DATABASE IF EXISTS virtual_library_db;
 CREATE DATABASE IF NOT EXISTS virtual_library_db;
 USE virtual_library_db;
 
-CREATE TABLE author # Need to make email nullable and not AK
+CREATE TABLE author
 (
     author_id INT AUTO_INCREMENT PRIMARY KEY
     , author_name VARCHAR(128) NOT NULL
-    , email_address VARCHAR(64) NOT NULL
+    , email_address VARCHAR(64)
 
     , CONSTRAINT author_ak_name
         UNIQUE(author_name)
-
-    , CONSTRAINT author_ak_email
-        UNIQUE(email_address)
 );
 
-CREATE TABLE publisher # Need to make email nullable and not AK
+CREATE TABLE publisher
 (
     publisher_id INT AUTO_INCREMENT PRIMARY KEY
     , publisher_name VARCHAR(128) NOT NULL
-    , email_address VARCHAR(64) NOT NULL
+    , email_address VARCHAR(64)
 
     , CONSTRAINT publisher_ak_name
             UNIQUE(publisher_name)
-    , CONSTRAINT publisher_ak_email
-            UNIQUE(email_address)
 );
 
 CREATE TABLE book
 (
     book_id INT AUTO_INCREMENT PRIMARY KEY
     , book_title VARCHAR(256) NOT NULL
-    , description TEXT
     , author_id INT # authors can be null, reflect in uml
     , publisher_id INT NOT NULL
     , release_date DATE NOT NULL
@@ -118,6 +112,7 @@ CREATE TABLE user
 (
     user_name VARCHAR(64) PRIMARY KEY
     , password VARCHAR(64) NOT NULL
+	, is_admin BOOL DEFAULT FALSE NOT NULL
 );
 
 CREATE TABLE book_list
