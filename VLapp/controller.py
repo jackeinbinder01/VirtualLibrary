@@ -1,9 +1,10 @@
 import model
 import pymysql
+import db_and_app_login
 
 
 def work():
-    connection = model.connect_to_database()
+    connection = db_and_app_login.connect_to_database()
     if connection == None:
         print("closing app")
         return
