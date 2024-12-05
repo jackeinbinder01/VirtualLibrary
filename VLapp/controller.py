@@ -10,7 +10,7 @@ def work():
         return
     try:
         while True:
-            username = model.login_options(connection)
+            username = db_and_app_login.login_options(connection)
             if username == False:
                 print("Failed to login to the Virtual Library. Closing application.")
                 return
