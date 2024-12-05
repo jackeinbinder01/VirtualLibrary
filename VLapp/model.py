@@ -74,7 +74,7 @@ def get_username_password():
     return username, password
 
 
-def create_user(connection):
+def create_user(connection, is_admin=False):
     username, password = get_username_password()
     try:
         creation_conn = connection.cursor()
@@ -82,27 +82,28 @@ def create_user(connection):
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
         print("User created successfully")
-
         # Commit changes to ensure the user is saved
         connection.commit()
 
-        # Call LoginUser to log in
-        creation_conn.callproc('LoginUser', (username, password))
-        result = creation_conn.fetchone()
-        print(f"Raw SELECT result: {result}")
+        if not is_admin:
 
-        if result is None or "login_status" not in result:
-            return False
+            # Call LoginUser to log in
+            creation_conn.callproc('LoginUser', (username, password))
+            result = creation_conn.fetchone()
+            print(f"Raw SELECT result: {result}")
 
-        login_status = result["login_status"]
-        print(f"Login Status after creation: {login_status}")
+            if result is None or "login_status" not in result:
+                return False
 
-        # Return username if login is successful
-        if login_status == "Login Successful":
-            return username
-        else:
-            print("Login procedure did not return a valid status after account creation.")
-            return False
+            login_status = result["login_status"]
+            print(f"Login Status after creation: {login_status}")
+
+            # Return username if login is successful
+            if login_status == "Login Successful":
+                return username
+            else:
+                print("Login procedure did not return a valid status after account creation.")
+                return False
     except pymysql.Error as e:
         print(f"Error during account creation or login: {e}")
         return False
