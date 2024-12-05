@@ -38,9 +38,9 @@ def connect_to_database():
 def login_options(connection):
     while True:
         answer = input("Please login or create a new account:\n"
-                       "\n1. Login to an existing account."
-                       "\n2. Create a new account.\n"
-                       "\nEnter 'q' to quit.\n")
+                       "\n1. Login to an existing account"
+                       "\n2. Create a new account"
+                       "\nq. Quit\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -219,7 +219,7 @@ def admin_main_menu():
                    "\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
-                   "\n4. Manage users\n"
+                   "\n4. Manage users"
                    "\nq. Quit\n\n")
     return answer
 
@@ -251,11 +251,16 @@ def admin_create_user(connection):
     password = input("Enter the user's password: ").strip()
 
     if username == '' or password == '':
-        print("\nCreate User Error: Username and/or password cannot be blank")
+        print("\nCreate user error: Username and/or password cannot be blank")
         manage_users_menu(connection)
         return
 
-    print(f"\nCreate account for user: '{username}' with password: '{password}'\n")
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL AddUser('{username}', '{password}')")
+        print(f"\nSuccessfully created account for '{username}'\n")
+    except pymysql.Error as e:
+        print(f"\nAdmin create user error: {e}\n")
 
 
 def admin_delete_user(connection):
