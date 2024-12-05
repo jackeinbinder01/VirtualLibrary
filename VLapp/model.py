@@ -31,9 +31,14 @@ def connect_to_database():
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            retry = input("\nWould you like to try again? (y/n)\n").strip().lower()
-            if retry != 'y':
-                return None
+            while True:
+                retry = input("Would you like to try again? (y/n)\n").strip().lower()
+                if retry == 'y':
+                    break
+                if retry == 'n':
+                    return None
+                else:
+                    print("invalid entry")
 
 
 def login_options(connection):
