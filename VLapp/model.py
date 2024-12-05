@@ -40,7 +40,7 @@ def login_options(connection):
         answer = input("Please login or create a new account:\n"
                        "\n1. Login to an existing account."
                        "\n2. Create a new account.\n"
-                       "\nEnter 'q' to quit.\n")
+                       "\nq. Quit.\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -69,7 +69,7 @@ def login_options(connection):
 
 
 def get_username_password():
-    username = input("Please enter your Virtual Library username: ")
+    username = input("\nPlease enter your Virtual Library username: ")
     password = input("Please enter your Virtual Library password: ")
     return username, password
 
@@ -206,26 +206,26 @@ def get_search_param(username):
 
 def main_menu():
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books."
-                   "\n2. Manage my saved book lists."
-                   "\nq. to quit\n")
+                   "\n1. Search the Virtual Library for books"
+                   "\n2. Manage my saved book lists"
+                   "\nq. Quit\n\n")
     return answer
 
 def admin_main_menu():
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books."
-                   "\n2. Manage my saved book lists."
-                   "\n3. Manage users\n"
-                   "\nq. Quit\n")
+                   "\n1. Search the Virtual Library for books"
+                   "\n2. Manage my saved book lists"
+                   "\n3. Manage users"
+                   "\nq. Quit\n\n")
     return answer
 
-def manage_users_menu(connection, username):
+def manage_users_menu(connection):
+    print("\nWelcome to the Manage Users Menu!")
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Create a user account\n."
-                   "\n2. Delete a user account\n."
-                   "\n3. Update user information\n"
-                   "\nq. Quit\n")
-
+                   "\n1. Create a user account"
+                   "\n2. Delete a user account"
+                   "\n3. Update user information"
+                   "\nr. Return to main menu\n\n")
     match answer:
         case '1':
             admin_create_user(connection)
@@ -235,14 +235,71 @@ def manage_users_menu(connection, username):
             admin_update_user_information(connection)
 
 def admin_create_user(connection):
-    pass
+    username = input("Enter the user's username: ").strip()
+    password = input("Enter the user's password: ").strip()
+
+    if username == '' or password == '':
+        print("\nCreate User Error: Username and/or password cannot be blank")
+        manage_users_menu(connection)
+        return
+
+    print(f"\nCreate account for user: '{username}' with password: '{password}'\n")
 
 def admin_delete_user(connection):
-    pass
+    username = input("Enter the username of the user to delete: ").strip()
+
+    if username == '':
+        print("\nDelete User Error: Username cannot be blank.")
+        manage_users_menu(connection)
+        return
+
+    print(f"\nDelete account for user: '{username}'\n")
 
 def admin_update_user_information(connection):
-    pass
+    answer = input(f"\nPlease select from the following options:\n"
+                   "\n1. Update a user's username"
+                   "\n2. Update a user's password"
+                   "\n3. Update a user's username and password"
+                   "\nr. Return to the Manage Users Menu\n\n")
 
+    match answer.lower():
+        case '1':
+            old_username = input("Enter the user's old username: ").strip()
+            new_username = input("Enter the user's new username: ").strip()
+
+            if old_username == new_username:
+                print("\nUpdate User Error: New username must be different than the original username.")
+                admin_update_user_information(connection)
+            if new_username == '':
+                print("\nUpdate User Error: New username cannot be blank.")
+                admin_update_user_information(connection)
+
+        case '2':
+            username = input("Enter the user's username: ").strip()
+            new_password = input("Enter the user's new password: ").strip()
+
+            if new_password == '':
+                print("\nUpdate User Error: New password cannot be blank.")
+                admin_update_user_information(connection)
+        case '3':
+            old_username = input("Enter the user's old username: ").strip()
+            new_username = input("Enter the user's new username: ").strip()
+            new_password = input("Enter the user's new password: ").strip()
+
+            if old_username == new_username:
+                print("\nUpdate User Error: New username must be different than the original username.")
+                admin_update_user_information(connection)
+            if new_username == '':
+                print("\nUpdate User Error: New username cannot be blank.")
+                admin_update_user_information(connection)
+            if new_password == '':
+                print("\nUpdate User Error: New password cannot be blank.")
+                admin_update_user_information(connection)
+        case 'r':
+            manage_users_menu(connection)
+        case _:
+            print(f"\nInvalid option '{answer}'. Please try again.")
+            admin_update_user_information(connection)
 
 def search_menu(current_list=None):
     print("\nWelcome to the search menu!")
@@ -276,7 +333,7 @@ def application_logic(connection, username):
     while leave:
         connection.commit()
 
-        user_is_admin = False
+        user_is_admin = True
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:
@@ -295,7 +352,7 @@ def application_logic(connection, username):
         elif main_menu_answer.strip() == "2":  # Manage Lists
             manage_lists_logic(connection, username)
         elif main_menu_answer.strip() == "3" and user_is_admin:
-            manage_users_menu(connection, username)
+            manage_users_menu(connection)
 
         else:
             print("Invalid input. Please try again.")
