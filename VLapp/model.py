@@ -460,7 +460,7 @@ def manage_menu(username):
           "Please select from the following options:\n")
     answer = input(
         "1. Create a new book list\n"
-        "2. View my book lists\n"
+        "2. View my saved book lists\n"
         "3. Delete an existing book list\n"
         "4. Add a book to a book list\n"
         "5. Remove a book from a book list\n"
@@ -796,7 +796,7 @@ def print_list_names_of_user(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s Saved Book Lists: ")
+                print(f"{username}'s saved book lists: ")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
                 return
@@ -825,7 +825,7 @@ def print_user_book_lists(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s Saved Book Lists: ")
+                print(f"{username}'s saved book lists: ")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
 
@@ -909,7 +909,7 @@ def export_user_book_list(connection, username):
                 return
 
             # Display the user's saved book lists
-            print(f"\n{username}'s Saved Book Lists:")
+            print(f"\n{username}'s saved book lists:")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
@@ -1194,7 +1194,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "add":
                 while True:
                     # Display the user's saved book lists
-                    print(f"{username}'s Saved Book Lists: ")
+                    print(f"\n{username}'s saved book lists: \n")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1235,7 +1235,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "delete":
                 while True:
                     # Display the user's saved book lists
-                    print(f"{username}'s Saved Book Lists: ")
+                    print(f"{username}'s saved book lists: ")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1288,7 +1288,7 @@ def delete_book_list(connection, username):
                 return
 
             # Display book lists with corresponding numbers
-            print(f"{username}'s Saved Book Lists:")
+            print(f"{username}'s saved book lists:")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
