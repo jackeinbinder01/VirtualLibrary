@@ -208,6 +208,7 @@ def main_menu():
     answer = input(f"Please select from the following options:\n"
                    "\n1. Search the Virtual Library for books."
                    "\n2. Manage my saved book lists."
+                   "\n3. View analysis menu"
                    "\nq. to quit\n")
     return answer
 
@@ -250,7 +251,6 @@ def manage_menu(username):
         "3. Delete an existing book list\n"
         "4. Export a book list to csv file\n"
         "5. Import a book list from a csv file\n"
-        "6. View the analysis menu\n"
         "r. Return to main menu\n")
     return answer
 
@@ -278,6 +278,9 @@ def application_logic(connection, username):
 
         elif main_menu_answer.strip() == "2":  # Manage Lists
             manage_lists_logic(connection, username)
+            
+        elif main_menu_answer.strip() == '3':
+            analysis_logic(connection, username)
 
         else:
             print("Invalid input. Please try again.")
@@ -365,8 +368,7 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '5':
             import_book_list_from_csv(connection, username)
-        elif list_menu_answer.strip() == '6':
-            analysis_logic(connection, username)
+
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
@@ -1073,9 +1075,14 @@ def analysis_logic(connection, username):
             if analysis_input == '1':
                 user_genre_analysis(connection, username)
             elif analysis_input == '2':
-                user_date_analysis(connection, username)
+                user_most_read_genre_analysis(connection, username)
             elif analysis_input == "3":
                 user_book_count_analysis(connection, username)
+            elif analysis_input == '4':
+                user_author_analysis(connection, username)
+            elif analysis_input == "5":
+                user_most_read_author_analysis(connection, username)  
+                
             elif analysis_input == 'r':
                 return
             
@@ -1086,8 +1093,10 @@ def analysis_menu(connection, username):
 
     
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
-                            f"\n2. View what range of dates {user}'s books are from"
-                            f"\n3. View the number of unique books across"
+                            f"\n2. View {user}'s most read genre"
+                            f"\n3. View the number of unique books"
+                            f"\n4. View authors across all {user}'s lists"
+                            f"\n5. View {user}'s most read author"
                             "\n\nr. to return to managment menu\n"
                             )
     return analysis_input
@@ -1112,18 +1121,57 @@ def user_genre_analysis(connection, username):
     except Exception as e:
         print(f"Unexpected error: {e}")
         
-def user_date_analysis(connection, username):
+def user_most_read_genre_analysis(connection, username):
     try:
-        with connection.cursor() as date_analysis:
-            date_analysis.callproc("DateRangeUserBooks", (username,))
-            result = date_analysis.fetchall()
-            date1 = result[0].get("earliest_date")
-            date2 = result[0].get("latest_date")
+        with connection.cursor() as most_read_genre_analysis:
+            most_read_genre_analysis.callproc("MostReadGenre", (username,))
+            result = most_read_genre_analysis.fetchall()
             
-            if date1 == date2:
-                print(f"The only date your book(s) are from is {date1}\n\n")
-            else:  
-                print(f"You have books from {date1} through {date2}!\n\n")
+            if len(result) > 1:
+                print(f" {username}'s most read genres are\n")
+                for genre in result:
+                    print(f"- {genre.get("genre_name")}")
+            else:
+                genre = result[0]
+                print(f" {username}'s most read genre is:\n")
+                print(f"- {genre.get("genre_name")}")
+            return
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+def user_author_analysis(connection, username):
+    try:
+        with connection.cursor() as author_analysis:
+            author_analysis.callproc("AuthorDiversity", (username,))
+            result = author_analysis.fetchall()
+            
+            if not result:
+                print(f"There are no books in your lists {username}!")
+                return
+            print("The Authors you read are:\n")
+            for key in result:
+                author = key.get("unique_authors")
+                print(f"- {author}")
+            print("\n")
+            return
+            # print_analysis_tabular(result, "genres")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+def user_most_read_author_analysis(connection, username):
+    try:
+        with connection.cursor() as most_read_author:
+            most_read_author.callproc("TopAuthor", (username,))
+            result = most_read_author.fetchall()
+            
+            if len(result) > 1:
+                print(f" {username}'s most read genres are\n")
+                for author in result:
+                    print(f"- {author.get("author_name")}")
+            else:
+                author = result[0]
+                print(f" {username}'s most read genre is:\n")
+                print(f"- {author.get("author_name")}")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
