@@ -40,7 +40,7 @@ def login_options(connection):
         answer = input("Please login or create a new account:\n"
                        "\n1. Login to an existing account."
                        "\n2. Create a new account.\n"
-                       "\nq. Quit.\n")
+                       "\nEnter 'q' to quit.\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -69,7 +69,7 @@ def login_options(connection):
 
 
 def get_username_password():
-    username = input("\nPlease enter your Virtual Library username: ")
+    username = input("Please enter your Virtual Library username: ")
     password = input("Please enter your Virtual Library password: ")
     return username, password
 
@@ -208,6 +208,7 @@ def main_menu():
     answer = input(f"Please select from the following options:\n"
                    "\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
+                   "\n3. View user analytics"
                    "\nq. Quit\n\n")
     return answer
 
@@ -216,7 +217,8 @@ def admin_main_menu():
     answer = input(f"Please select from the following options:\n"
                    "\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
-                   "\n3. Manage users"
+                   "\n3. View user analytics"
+                   "\n4. Manage users\n"
                    "\nq. Quit\n\n")
     return answer
 
@@ -226,7 +228,9 @@ def manage_users_menu(connection):
     answer = input(f"Please select from the following options:\n"
                    "\n1. Create a user account"
                    "\n2. Delete a user account"
-                   "\n3. Update user information"
+                   "\n3. Update a user's information"
+                   "\n4. Make a user an Admin"
+                   "\n5. Demote a user from Admin"
                    "\nr. Return to main menu\n\n")
     match answer:
         case '1':
@@ -235,6 +239,10 @@ def manage_users_menu(connection):
             admin_delete_user(connection)
         case '3':
             admin_update_user_information(connection)
+        case '4':
+            make_user_admin(connection)
+        case '5':
+            demote_user_from_admin(connection)
 
 
 def admin_create_user(connection):
@@ -306,6 +314,35 @@ def admin_update_user_information(connection):
             print(f"\nInvalid option '{answer}'. Please try again.")
             admin_update_user_information(connection)
 
+def make_user_admin(connection):
+    username = input("Enter the user's username: ").strip()
+
+    if username == '':
+        print("\nMake user admin error: Username cannot be blank.")
+        manage_users_menu(connection)
+
+    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
+    if confirmation.lower() != 'y':
+        print(f"User '{username}' was NOT made an Admin")
+        manage_users_menu(connection)
+
+    print(f"User '{username}' was successfully promoted to Admin!")
+
+
+def demote_user_from_admin(connection):
+    username = input("Enter the user's username: ").strip()
+
+    if username == '':
+        print("\nDemote user from admin error: Username cannot be blank.")
+        manage_users_menu(connection)
+
+    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
+    if confirmation.lower() != 'y':
+        print(f"User '{username}' was NOT demoted from Admin")
+        manage_users_menu(connection)
+
+    print(f"User '{username}' was successfully demoted from Admin!")
+
 
 def search_menu(current_list=None):
     print("\nWelcome to the search menu!")
@@ -329,7 +366,6 @@ def manage_menu(username):
         "3. Delete an existing book list\n"
         "4. Export a book list to csv file\n"
         "5. Import a book list from a csv file\n"
-        "6. View the analysis menu\n"
         "r. Return to main menu\n")
     return answer
 
@@ -356,8 +392,14 @@ def application_logic(connection, username):
 
         elif main_menu_answer.strip() == "2":  # Manage Lists
             manage_lists_logic(connection, username)
-        elif main_menu_answer.strip() == "3" and user_is_admin:
-            manage_users_menu(connection)
+
+        elif main_menu_answer.strip() == '3':
+            analysis_logic(connection, username)
+
+        elif main_menu_answer.strip() == "4" and user_is_admin:
+            manage_users_menu(connection, username)
+
+
 
         else:
             print("Invalid input. Please try again.")
@@ -445,8 +487,7 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '5':
             import_book_list_from_csv(connection, username)
-        elif list_menu_answer.strip() == '6':
-            analysis_logic(connection, username)
+
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
@@ -792,7 +833,7 @@ def export_book_list_to_csv(book_list_name, books):
         # Write book data to the CSV file
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            # write header row
+            #write header row
             writer.writerow(
                 ["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
@@ -1156,9 +1197,14 @@ def analysis_logic(connection, username):
         if analysis_input == '1':
             user_genre_analysis(connection, username)
         elif analysis_input == '2':
-            user_date_analysis(connection, username)
+            user_most_read_genre_analysis(connection, username)
         elif analysis_input == "3":
             user_book_count_analysis(connection, username)
+        elif analysis_input == '4':
+            user_author_analysis(connection, username)
+        elif analysis_input == "5":
+            user_most_read_author_analysis(connection, username)
+
         elif analysis_input == 'r':
             return
 
@@ -1168,8 +1214,10 @@ def analysis_menu(connection, username):
     print(f"Welcome to the analysis menu")
 
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
-                           f"\n2. View what range of dates {user}'s books are from"
-                           f"\n3. View the number of unique books across"
+                           f"\n2. View {user}'s most read genre"
+                           f"\n3. View the number of unique books"
+                           f"\n4. View authors across all {user}'s lists"
+                           f"\n5. View {user}'s most read author"
                            "\n\nr. to return to managment menu\n"
                            )
     return analysis_input
@@ -1190,23 +1238,64 @@ def user_genre_analysis(connection, username):
                 print(f"- {genre}")
             print("\n")
             return
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+
+def user_most_read_genre_analysis(connection, username):
+    try:
+        with connection.cursor() as most_read_genre_analysis:
+            most_read_genre_analysis.callproc("MostReadGenre", (username,))
+            result = most_read_genre_analysis.fetchall()
+
+            if len(result) > 1:
+                print(f" {username}'s most read genres are\n")
+                for genre in result:
+                    print(f"- {genre.get("genre_name")}")
+            else:
+                genre = result[0]
+                print(f"{username}'s most read genre is:\n")
+                print(f"- {genre.get("genre_name")}")
+            return
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+
+def user_author_analysis(connection, username):
+    try:
+        with connection.cursor() as author_analysis:
+            author_analysis.callproc("AuthorDiversity", (username,))
+            result = author_analysis.fetchall()
+
+            if not result:
+                print(f"There are no books in your lists {username}!")
+                return
+            print("The Authors you read are:\n")
+            for key in result:
+                author = key.get("unique_authors")
+                print(f"- {author}")
+            print("\n")
+            return
             # print_analysis_tabular(result, "genres")
     except Exception as e:
         print(f"Unexpected error: {e}")
 
 
-def user_date_analysis(connection, username):
+def user_most_read_author_analysis(connection, username):
     try:
-        with connection.cursor() as date_analysis:
-            date_analysis.callproc("DateRangeUserBooks", (username,))
-            result = date_analysis.fetchall()
-            date1 = result[0].get("earliest_date")
-            date2 = result[0].get("latest_date")
+        with connection.cursor() as most_read_author:
+            most_read_author.callproc("TopAuthor", (username,))
+            result = most_read_author.fetchall()
 
-            if date1 == date2:
-                print(f"The only date your book(s) are from is {date1}\n\n")
+            if len(result) > 1:
+                print(f"{username}'s most read genres are\n")
+                for author in result:
+                    print(f"- {author.get("author_name")}")
             else:
-                print(f"You have books from {date1} through {date2}!\n\n")
+                author = result[0]
+                print(f"{username}'s most read genre is:\n")
+                print(f"- {author.get("author_name")}")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
@@ -1230,23 +1319,3 @@ def user_book_count_analysis(connection, username):
 
 def user_format_analysis(connection, username):
     pass
-
-# def print_analysis_tabular(data, analysis_type):
-#     key_to_header = {
-#         f"{analysis_type}": f"{analysis_type.capitalize()}",
-#     }
-
-#     # Reformat the data to match the custom header names
-#     formatted_info = [
-#         {
-#             key_to_header[f"{analysis_type}"]: data_type.get(f"{analysis_type}", "N/A"),
-#         }
-#         for data_type in data
-#     ]
-
-#     # Extract the headers in the desired order
-#     custom_headers = list(key_to_header.values())
-
-#     # Debugging output
-#     print("Formatted books (final structure):", formatted_info)
-#     print("Custom headers:", custom_headers)

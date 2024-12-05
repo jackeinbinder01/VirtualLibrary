@@ -228,7 +228,9 @@ def manage_users_menu(connection):
     answer = input(f"Please select from the following options:\n"
                    "\n1. Create a user account"
                    "\n2. Delete a user account"
-                   "\n3. Update user information"
+                   "\n3. Update a user's information"
+                   "\n4. Make a user an Admin"
+                   "\n5. Demote a user from Admin"
                    "\nr. Return to main menu\n\n")
     match answer:
         case '1':
@@ -237,6 +239,10 @@ def manage_users_menu(connection):
             admin_delete_user(connection)
         case '3':
             admin_update_user_information(connection)
+        case '4':
+            make_user_admin(connection)
+        case '5':
+            demote_user_from_admin(connection)
 
 
 def admin_create_user(connection):
@@ -307,6 +313,35 @@ def admin_update_user_information(connection):
         case _:
             print(f"\nInvalid option '{answer}'. Please try again.")
             admin_update_user_information(connection)
+
+def make_user_admin(connection):
+    username = input("Enter the user's username: ").strip()
+
+    if username == '':
+        print("\nMake user admin error: Username cannot be blank.")
+        manage_users_menu(connection)
+
+    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
+    if confirmation.lower() != 'y':
+        print(f"User '{username}' was NOT made an Admin")
+        manage_users_menu(connection)
+
+    print(f"User '{username}' was successfully promoted to Admin!")
+
+
+def demote_user_from_admin(connection):
+    username = input("Enter the user's username: ").strip()
+
+    if username == '':
+        print("\nDemote user from admin error: Username cannot be blank.")
+        manage_users_menu(connection)
+
+    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
+    if confirmation.lower() != 'y':
+        print(f"User '{username}' was NOT demoted from Admin")
+        manage_users_menu(connection)
+
+    print(f"User '{username}' was successfully demoted from Admin!")
 
 
 def search_menu(current_list=None):
