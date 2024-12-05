@@ -453,8 +453,10 @@ def manage_menu(username):
         "1. Create a new book list\n"
         "2. View my book lists\n"
         "3. Delete an existing book list\n"
-        "4. Export a book list to csv file\n"
-        "5. Import a book list from a csv file\n"
+        "4. Add a book to a book list\n"
+        "5. Remove a book from a book list\n"
+        "6. Export a book list to csv file\n"
+        "7. Import a book list from a csv file\n"
         "r. Return to main menu\n")
     return answer
 
@@ -587,9 +589,15 @@ def manage_lists_logic(connection, username):
             delete_book_list(connection, username)
 
         elif list_menu_answer.strip() == '4':
-            export_user_book_list(connection, username)
+            add_book_by_id_logic(connection, username)
 
         elif list_menu_answer.strip() == '5':
+            remove_book_by_id_logic(connection, username)
+
+        elif list_menu_answer.strip() == '6':
+            export_user_book_list(connection, username)
+
+        elif list_menu_answer.strip() == '7':
             import_book_list_from_csv(connection, username)
 
         # quit to main menu
