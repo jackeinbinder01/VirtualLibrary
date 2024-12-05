@@ -1125,7 +1125,7 @@ def print_books_tabular(book_list):
 
     try:
         # Print table using tabulate
-        print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
+        print(tabulate.tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
 
