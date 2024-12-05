@@ -1,5 +1,5 @@
 USE virtual_library_db;
-
+DROP PROCEDURE IF EXISTS LoginUser;
 DELIMITER $$
 
 -- Login User
@@ -25,6 +25,9 @@ BEGIN
     END IF;
 END $$
 
+DELIMITER ;
+DROP PROCEDURE IF EXISTS AddUser;
+DELIMITER $$
 -- Add User
 CREATE PROCEDURE AddUser (
     IN username_p VARCHAR(64),
@@ -41,9 +44,9 @@ BEGIN
         VALUES (username_p, password_p);
     END IF;
 END $$
+DELIMITER ;
+DROP PROCEDURE IF EXISTS GetBooksByFilters;
 DELIMITER $$
-DELIMITER $$
-
 CREATE PROCEDURE GetBooksByFilters (
     IN genreName_p VARCHAR(64),
     IN bookName_p VARCHAR(256),
@@ -107,6 +110,7 @@ BEGIN
 END $$
 
 DELIMITER ;
+DROP PROCEDURE IF EXISTS FilterOnFilteredList;
 DELIMITER $$
 
 CREATE PROCEDURE FilterOnFilteredList (
@@ -160,8 +164,7 @@ BEGIN
 END $$
 
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS AddOrUpdateBookRating;
 DELIMITER $$
 
 -- Add or Update Book Rating
@@ -194,8 +197,7 @@ BEGIN
     END IF;
 END $$
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS DropFilteredList;
 DELIMITER $$
 -- Drop Filtered List
 CREATE PROCEDURE DropFilteredList ()
@@ -204,6 +206,9 @@ BEGIN
     DROP TABLE IF EXISTS FilteredBookList;
 END $$
 
+DELIMITER ;
+DROP PROCEDURE IF EXISTS GetBookById;
+DELIMITER $$
 -- Get Book By ID
 CREATE PROCEDURE GetBookById (
     IN bookId_p INT
@@ -221,6 +226,7 @@ BEGIN
 END $$
 
 DELIMITER ;
+DROP PROCEDURE IF EXISTS CreateSubList;
 DELIMITER $$
 
 CREATE PROCEDURE CreateSubList (
@@ -255,7 +261,6 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
-
 DROP PROCEDURE IF EXISTS AddBookToSubList;
 DELIMITER $$
 
@@ -312,8 +317,6 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
-
-
 DROP PROCEDURE IF EXISTS RemoveBookFromUserList;
 DELIMITER $$
 
@@ -347,7 +350,9 @@ END $$
 
 DELIMITER ;
 
-USE virtual_library_db;
+DROP PROCEDURE IF EXISTS return_list_name_of_user;
+
+
 
 /*
 Procedure to view a list of names of booklists associated with a specific user.
@@ -360,10 +365,8 @@ BEGIN
     WHERE bl.user_name = user_name_p;
 END $$
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS fetch_books_in_list;
 DELIMITER $$
-
 CREATE PROCEDURE fetch_books_in_list(
     IN book_list_name_p VARCHAR(64),
     IN username_p VARCHAR(64)
@@ -396,12 +399,7 @@ BEGIN
 END $$
 
 DELIMITER ;
-
-
-        
-SELECT @@sql_mode;
-
--- Test case:
+DROP PROCEDURE IF EXISTS CreateUserBookList;
 
 /*
 Procedure that creates a new user book list
@@ -438,7 +436,7 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
-
+DROP PROCEDURE IF EXISTS delete_book_list;
 DELIMITER $$
 
 CREATE PROCEDURE delete_book_list(
@@ -475,8 +473,7 @@ proc_block: BEGIN
 END $$
 
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS FetchUserGenres;
 DELIMITER $$
 
 CREATE PROCEDURE FetchUserGenres(
@@ -493,7 +490,7 @@ BEGIN
 END $$
 
 DELIMITER ;
-
+DROP PROCEDURE IF EXISTS CountUserBooks;
 DELIMITER $$
 
 CREATE PROCEDURE CountUserBooks(
@@ -507,11 +504,7 @@ BEGIN
 END $$
 
 DELIMITER ;
-
-
-
-DELIMITER $$
-
+DROP PROCEDURE IF EXISTS MostReadGenre;
 DELIMITER $$
 CREATE PROCEDURE MostReadGenre(IN user_name_p VARCHAR(64))
 BEGIN
@@ -537,8 +530,7 @@ BEGIN
     ORDER BY bg.genre_name;
 END $$
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS AuthorDiversity;
 DELIMITER $$
 CREATE PROCEDURE AuthorDiversity(IN user_name_p VARCHAR(64))
 BEGIN
@@ -549,8 +541,7 @@ BEGIN
     WHERE blb.user_name = user_name_p;
 END $$
 DELIMITER ;
-
-
+DROP PROCEDURE IF EXISTS TopAuthor;
 DELIMITER $$
 CREATE PROCEDURE TopAuthor(IN user_name_p VARCHAR(64))
 BEGIN
