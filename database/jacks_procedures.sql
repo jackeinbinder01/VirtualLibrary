@@ -406,3 +406,27 @@ END //
 
 DELIMITER ;
 
+
+DROP PROCEDURE IF EXISTS delete_user;
+DELIMITER //
+
+CREATE PROCEDURE delete_user(username_p VARCHAR(64))
+
+BEGIN
+    DECLARE username_not_in_db_error VARCHAR(64);
+    SET username_not_in_db_error = CONCAT('User, ', username_p, ', does not exist');
+
+    IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = username_p
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = username_not_in_db_error;
+    ELSE
+        DELETE FROM user u WHERE u.user_name = username_p;
+    END IF;
+
+END //
+

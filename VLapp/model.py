@@ -271,7 +271,7 @@ def admin_delete_user(connection):
         cursor.execute(f"CALL delete_user('{username}')")
         print(f"\nSuccessfully deleted '{username}'\n")
     except pymysql.Error as e:
-        print(f"\n Delete user error: {e}")
+        print(f"\nDelete user error: {e}\n")
 
 def admin_update_user_information(connection):
     answer = input(f"\nPlease select from the following options:\n"
