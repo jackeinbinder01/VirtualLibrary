@@ -90,13 +90,13 @@ def create_user(connection, is_admin=False):
             # Call LoginUser to log in
             creation_conn.callproc('LoginUser', (username, password))
             result = creation_conn.fetchone()
-            print(f"Raw SELECT result: {result}")
+            # print(f"Raw SELECT result: {result}")
 
             if result is None or "login_status" not in result:
                 return False
 
             login_status = result["login_status"]
-            print(f"Login Status after creation: {login_status}")
+            # print(f"Login Status after creation: {login_status}")
 
             # Return username if login is successful
             if login_status == "Login Successful":
