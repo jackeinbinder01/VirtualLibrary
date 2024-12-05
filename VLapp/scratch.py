@@ -38,9 +38,9 @@ def connect_to_database():
 def login_options(connection):
     while True:
         answer = input("Please login or create a new account:\n"
-                       "\n1. Login to an existing account."
-                       "\n2. Create a new account.\n"
-                       "\nEnter 'q' to quit.\n")
+                       "\n1. Login to an existing account"
+                       "\n2. Create a new account"
+                       "\nq. Quit\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -65,7 +65,7 @@ def login_options(connection):
                     if retry.strip().lower() == 'n':
                         return False
         else:
-            print("invalid input please try again")
+            print(f"Invalid input '{answer}', please try again\n")
 
 
 def get_username_password():
@@ -74,7 +74,7 @@ def get_username_password():
     return username, password
 
 
-def create_user(connection):
+def create_user(connection, is_admin=False):
     username, password = get_username_password()
     try:
         creation_conn = connection.cursor()
@@ -82,27 +82,28 @@ def create_user(connection):
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
         print("User created successfully")
-
         # Commit changes to ensure the user is saved
         connection.commit()
 
-        # Call LoginUser to log in
-        creation_conn.callproc('LoginUser', (username, password))
-        result = creation_conn.fetchone()
-        print(f"Raw SELECT result: {result}")
+        if not is_admin:
 
-        if result is None or "login_status" not in result:
-            return False
+            # Call LoginUser to log in
+            creation_conn.callproc('LoginUser', (username, password))
+            result = creation_conn.fetchone()
+            # print(f"Raw SELECT result: {result}")
 
-        login_status = result["login_status"]
-        print(f"Login Status after creation: {login_status}")
+            if result is None or "login_status" not in result:
+                return False
 
-        # Return username if login is successful
-        if login_status == "Login Successful":
-            return username
-        else:
-            print("Login procedure did not return a valid status after account creation.")
-            return False
+            login_status = result["login_status"]
+            # print(f"Login Status after creation: {login_status}")
+
+            # Return username if login is successful
+            if login_status == "Login Successful":
+                return username
+            else:
+                print("Login procedure did not return a valid status after account creation.")
+                return False
     except pymysql.Error as e:
         print(f"Error during account creation or login: {e}")
         return False
@@ -218,7 +219,7 @@ def admin_main_menu():
                    "\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
-                   "\n4. Manage users\n"
+                   "\n4. Manage users"
                    "\nq. Quit\n\n")
     return answer
 
@@ -250,11 +251,16 @@ def admin_create_user(connection):
     password = input("Enter the user's password: ").strip()
 
     if username == '' or password == '':
-        print("\nCreate User Error: Username and/or password cannot be blank")
+        print("\nCreate user error: Username and/or password cannot be blank")
         manage_users_menu(connection)
         return
 
-    print(f"\nCreate account for user: '{username}' with password: '{password}'\n")
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL AddUser('{username}', '{password}')")
+        print(f"\nSuccessfully created account for '{username}'\n")
+    except pymysql.Error as e:
+        print(f"\nAdmin create user error: {e}\n")
 
 
 def admin_delete_user(connection):
@@ -265,8 +271,12 @@ def admin_delete_user(connection):
         manage_users_menu(connection)
         return
 
-    print(f"\nDelete account for user: '{username}'\n")
-
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL delete_user('{username}')")
+        print(f"\nSuccessfully deleted '{username}'\n")
+    except pymysql.Error as e:
+        print(f"\nDelete user error: {e}\n")
 
 def admin_update_user_information(connection):
     answer = input(f"\nPlease select from the following options:\n"
@@ -283,10 +293,18 @@ def admin_update_user_information(connection):
             if old_username == new_username:
                 print("\nUpdate User Error: New username must be different than the original username.")
                 admin_update_user_information(connection)
+                return
             if new_username == '':
                 print("\nUpdate User Error: New username cannot be blank.")
                 admin_update_user_information(connection)
+                return
 
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_username('{old_username}', '{new_username}')")
+                print(f"\nSuccessfully updated username '{old_username}' to '{new_username}'!\n")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
         case '2':
             username = input("Enter the user's username: ").strip()
             new_password = input("Enter the user's new password: ").strip()
@@ -300,13 +318,13 @@ def admin_update_user_information(connection):
             new_password = input("Enter the user's new password: ").strip()
 
             if old_username == new_username:
-                print("\nUpdate User Error: New username must be different than the original username.")
+                print("\nUpdate user error: New username must be different than the original username.")
                 admin_update_user_information(connection)
             if new_username == '':
-                print("\nUpdate User Error: New username cannot be blank.")
+                print("\nUpdate user error: New username cannot be blank.")
                 admin_update_user_information(connection)
             if new_password == '':
-                print("\nUpdate User Error: New password cannot be blank.")
+                print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
         case 'r':
             manage_users_menu(connection)
@@ -320,13 +338,20 @@ def make_user_admin(connection):
     if username == '':
         print("\nMake user admin error: Username cannot be blank.")
         manage_users_menu(connection)
+        return
 
     confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
     if confirmation.lower() != 'y':
-        print(f"User '{username}' was NOT made an Admin")
+        print(f"\nUser '{username}' was NOT made an Admin.")
         manage_users_menu(connection)
+        return
 
-    print(f"User '{username}' was successfully promoted to Admin!")
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL make_user_admin('{username}')")
+        print(f"\nUser '{username}' was successfully promoted to Admin!\n")
+    except pymysql.Error as e:
+        print(f"\nMake user admin error: {e}\n")
 
 
 def demote_user_from_admin(connection):
@@ -335,13 +360,20 @@ def demote_user_from_admin(connection):
     if username == '':
         print("\nDemote user from admin error: Username cannot be blank.")
         manage_users_menu(connection)
+        return
 
     confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
     if confirmation.lower() != 'y':
-        print(f"User '{username}' was NOT demoted from Admin")
+        print(f"\nUser '{username}' was NOT demoted from Admin.")
         manage_users_menu(connection)
+        return
 
-    print(f"User '{username}' was successfully demoted from Admin!")
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL demote_user_from_admin('{username}')")
+        print(f"\nUser '{username}' was successfully demoted from Admin!\n")
+    except pymysql.Error as e:
+        print(f"\nDemote user from admin error: {e}\n")
 
 
 def search_menu(current_list=None):
@@ -397,7 +429,7 @@ def application_logic(connection, username):
             analysis_logic(connection, username)
 
         elif main_menu_answer.strip() == "4" and user_is_admin:
-            manage_users_menu(connection, username)
+            manage_users_menu(connection)
 
 
 
