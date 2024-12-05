@@ -538,21 +538,62 @@ CALL CountUserBooks('s');
 
 DELIMITER $$
 
-CREATE PROCEDURE DateRangeUserBooks(
-    IN username_p VARCHAR(64)
-)
+DELIMITER $$
+CREATE PROCEDURE MostReadGenre(IN user_name_p VARCHAR(64))
 BEGIN
-    SELECT 
-        MIN(b.release_date) AS earliest_date,
-        MAX(b.release_date) AS latest_date
-    FROM book_list_book blb
-    JOIN book_list bl ON blb.book_list_name = bl.list_name
-    JOIN book b ON blb.book_id = b.book_id
-    WHERE bl.user_name = username_p;
-END $$
+    -- Find the maximum count of genres
+    DECLARE max_count INT;
 
+    SELECT MAX(genre_count) INTO max_count
+    FROM (
+        SELECT bg.genre_name, COUNT(*) AS genre_count
+        FROM book_list_book blb
+        JOIN book_genre bg ON blb.book_id = bg.book_id
+        WHERE blb.user_name = user_name_p
+        GROUP BY bg.genre_name
+    ) AS genre_counts;
+
+    -- Select all genres with the maximum count
+    SELECT bg.genre_name, COUNT(*) AS count
+    FROM book_list_book blb
+    JOIN book_genre bg ON blb.book_id = bg.book_id
+    WHERE blb.user_name = user_name_p
+    GROUP BY bg.genre_name
+    HAVING count = max_count
+    ORDER BY bg.genre_name;
+END $$
 DELIMITER ;
 
-CALL DateRangeUserBooks('s');
+
+CALL MostReadGenre('s');
+
+DELIMITER $$
+CREATE PROCEDURE AuthorDiversity(IN user_name_p VARCHAR(64))
+BEGIN
+    SELECT COUNT(DISTINCT a.author_id) AS unique_authors
+    FROM book_list_book blb
+    JOIN book b ON blb.book_id = b.book_id
+    JOIN author a ON b.author_id = a.author_id
+    WHERE blb.user_name = user_name_p;
+END $$
+DELIMITER ;
+
+CALL AuthorDiversity('s');
+
+DELIMITER $$
+CREATE PROCEDURE TopAuthor(IN user_name_p VARCHAR(64))
+BEGIN
+    SELECT a.author_name, COUNT(*) AS book_count
+    FROM book_list_book blb
+    JOIN book b ON blb.book_id = b.book_id
+    JOIN author a ON b.author_id = a.author_id
+    WHERE blb.user_name = user_name_p
+    GROUP BY a.author_name
+    ORDER BY book_count DESC
+    LIMIT 1;
+END $$
+DELIMITER ;
+
+CALL TopAuthor('s');
 
 
