@@ -16,7 +16,7 @@ def work():
             else:
                 break
     except Exception as e:
-        print("error found")
+        print(f"Errors occurred: {e}:")
         return
     model.application_logic(connection, username)
     connection.commit()
