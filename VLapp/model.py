@@ -213,7 +213,7 @@ def get_search_param(username):
 
 
 def main_menu():
-    print("Please select from the following options:\n")
+    print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
