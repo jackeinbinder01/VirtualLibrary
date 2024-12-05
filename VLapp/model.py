@@ -276,7 +276,7 @@ def admin_view_users(connection, admin_user_name):
                            else value) for key, value in row.items()}
                     for row in result_tuples
                 ]
-                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
+                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="fancy_grid")
                 print(f'{table}')
                 manage_users_menu(connection, admin_user_name)
     except pymysql.Error as e:
