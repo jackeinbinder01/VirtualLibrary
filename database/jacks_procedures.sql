@@ -540,5 +540,31 @@ END //
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS update_password;
+DELIMITER //
+
+CREATE PROCEDURE update_password(username_p VARCHAR(64), new_password_p VARCHAR(64))
+
+BEGIN
+	 DECLARE username_not_in_db_error VARCHAR(64);
+	 SET username_not_in_db_error = CONCAT('User, ', username_p, ', does not exist');
+
+	 IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = username_p
+        ) THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = username_not_in_db_error;
+     ELSE
+	     UPDATE user u
+	        SET u.password = new_password_p
+	     WHERE u.user_name = username_p;
+	 END IF;
+END //
+
+DELIMITER ;
+
 
 

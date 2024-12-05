@@ -313,6 +313,15 @@ def admin_update_user_information(connection):
             if new_password == '':
                 print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
+                return
+
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_password('{username}', '{new_password}')")
+                print(f"\nSuccessfully '{username}'s password!\n")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
+
         case '3':
             old_username = input("Enter the user's old username: ").strip()
             new_username = input("Enter the user's new username: ").strip()
