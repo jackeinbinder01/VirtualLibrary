@@ -3,7 +3,7 @@ import pymysql
 import csv
 from datetime import datetime
 from tabulate import tabulate
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt6.QtWidgets import QApplication, QFileDialog
 
 def connect_to_database():
     """
@@ -656,6 +656,7 @@ def import_book_list_from_csv(connection, username):
     :param username: user's account name
     """
 
+    print("\nPlease select a csv file that matches the import template in the README.\n")
     app = QApplication([])
 
     # Open file dialog to select a CSV file
@@ -696,26 +697,17 @@ def import_book_list_from_csv(connection, username):
                 url = row[8]
                 format_type = row[9]
 
-                parsed_release_date = parse_date(release_date)
+                formatted_release_date = parse_date(release_date)
 
-                if parsed_release_date:
+                if formatted_release_date:
                     current_date = datetime.now().date()
-                    if parsed_release_date > current_date:
-                        print(f"Future release date: '{parsed_release_date}' is invalid.")
-                    else:
-                        print(f"Valid release date: {parsed_release_date}")
+                    if formatted_release_date > current_date:
+                        print(f"Import Error: Future release date '{formatted_release_date}' is invalid.")
                 else:
                     print(f"'{release_date}' is not a valid date.")
                     return
 
-                print(parsed_release_date)
-
-                current_date = datetime.now().date()
-                if parsed_release_date > current_date:
-                    print(f"\nImport Error: Future release date: '{parsed_release_date}' is invalid.\n")
-                    return
-
-                if any(field == '' for field in [book_title, release_date, author_name,
+                if any(field == '' for field in [book_title, formatted_release_date, author_name,
                                                  author_email, publisher_name, publisher_email]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
@@ -723,23 +715,23 @@ def import_book_list_from_csv(connection, username):
                 else:
                     try:
                         cursor.execute(
-                            f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{release_date}')")
+                            f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to db: {e}")
                     try:
                         cursor.execute(
-                            f"CALL add_book_to_user_list('{username}', '{book_list_name}', '{book_title}', '{release_date}')")
+                            f"CALL add_book_to_user_list('{username}', '{book_list_name}', '{book_title}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
-                        print(f"Attempted add book to used list: {e}")
+                        print(f"Attempted add book to user list: {e}")
                 if series != '':
                     try:
-                        cursor.execute(f"CALL add_book_to_series('{book_title}', '{release_date}', '{series}')")
+                        cursor.execute(f"CALL add_book_to_series('{book_title}', '{formatted_release_date}', '{series}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to series: {e}")
 
                 if all(field != '' for field in [url, format_type]):
                     try:
-                        cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', '{release_date}')")
+                        cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add url: {e}")
 
@@ -748,7 +740,7 @@ def import_book_list_from_csv(connection, username):
                     if genre_name:
                         try:
                             cursor.execute(
-                                f"CALL add_genre_to_book('{book_title}', '{release_date}', '{genre_name}')"
+                                f"CALL add_genre_to_book('{book_title}', '{formatted_release_date}', '{genre_name}')"
                             )
                         except pymysql.MySQLError as e:
                             print(f"Attempted add genre to book: {e}")
