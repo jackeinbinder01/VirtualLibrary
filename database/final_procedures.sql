@@ -42,45 +42,39 @@ BEGIN
     END IF;
 END $$
 DELIMITER $$
-DELIMITER $$
 
 CREATE PROCEDURE GetBooksByFilters (
     IN genreName_p VARCHAR(64),
     IN bookName_p VARCHAR(256),
     IN publisherName_p VARCHAR(128),
     IN authorName_p VARCHAR(128),
-    IN seriesName_p VARCHAR(128),
-    IN username_p VARCHAR(64)
+    IN seriesName_p VARCHAR(128)
 )
 BEGIN
-    -- Create a temporary table FilteredBookList if it does not exist
-    CREATE TEMPORARY TABLE IF NOT EXISTS FilteredBookList (
+    -- Ensure the FilteredBookList table exists
+    CREATE TABLE IF NOT EXISTS FilteredBookList (
         book_id INT,
         book_title VARCHAR(256),
         release_date DATE,
         genres VARCHAR(256),
         publisher_name VARCHAR(128),
         author_name VARCHAR(128),
-        series_name VARCHAR(128),
-        rating INT,
-        comments TEXT
+        series_name VARCHAR(128)
     );
 
     -- Clear existing data in FilteredBookList
     TRUNCATE TABLE FilteredBookList;
 
     -- Populate FilteredBookList with filtered data
-    INSERT INTO FilteredBookList (book_id, book_title, release_date, genres, publisher_name, author_name, series_name, rating, comments)
+    INSERT INTO FilteredBookList (book_id, book_title, release_date, genres, publisher_name, author_name, series_name)
     SELECT 
-        b.book_id,
-        b.book_title,
+        b.book_id, 
+        b.book_title, 
         b.release_date,
         GROUP_CONCAT(DISTINCT g.genre_name ORDER BY g.genre_name SEPARATOR ', ') AS genres,
         p.publisher_name,
         a.author_name,
-        s.series_name,
-        br.score AS rating,
-        br.text AS comments
+        s.series_name
     FROM book b
     LEFT JOIN book_genre bg ON b.book_id = bg.book_id
     LEFT JOIN genre g ON bg.genre_name = g.genre_name
@@ -88,22 +82,24 @@ BEGIN
     LEFT JOIN author a ON b.author_id = a.author_id
     LEFT JOIN book_series bs ON b.book_id = bs.book_id
     LEFT JOIN series s ON bs.series_id = s.series_id
-    LEFT JOIN book_rating br ON b.book_id = br.book_id AND br.user_name = username_p
     WHERE 
         (genreName_p IS NULL OR EXISTS (
-            SELECT 1 FROM book_genre bg2 WHERE bg2.book_id = b.book_id AND bg2.genre_name = genreName_p
+            SELECT 1 
+            FROM book_genre bg2
+            WHERE bg2.book_id = b.book_id AND bg2.genre_name = genreName_p
         )) AND
         (bookName_p IS NULL OR b.book_title = bookName_p) AND
         (publisherName_p IS NULL OR p.publisher_name = publisherName_p) AND
         (authorName_p IS NULL OR a.author_name = authorName_p) AND
         (seriesName_p IS NULL OR s.series_name = seriesName_p)
-    GROUP BY b.book_id, b.book_title, b.release_date, p.publisher_name, a.author_name, s.series_name, br.score, br.text;
+    GROUP BY b.book_id, b.book_title, b.release_date, p.publisher_name, a.author_name, s.series_name;
 
-    -- Return the filtered list
+    -- Return the contents of FilteredBookList
     SELECT * FROM FilteredBookList;
 END $$
 
 DELIMITER ;
+
 DELIMITER $$
 
 CREATE PROCEDURE FilterOnFilteredList (
@@ -111,47 +107,67 @@ CREATE PROCEDURE FilterOnFilteredList (
     IN bookName_p VARCHAR(256),
     IN publisherName_p VARCHAR(128),
     IN authorName_p VARCHAR(128),
-    IN seriesName_p VARCHAR(128),
-    IN username_p VARCHAR(64)
+    IN seriesName_p VARCHAR(128)
 )
 BEGIN
     -- Ensure FilteredBookList exists
     IF NOT EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_name = 'FilteredBookList' 
-          AND table_schema = DATABASE()
+        SELECT 1 
+        FROM information_schema.tables 
+        WHERE table_name = 'FilteredBookList' AND table_schema = DATABASE()
     ) THEN
         SIGNAL SQLSTATE '02000' 
         SET MESSAGE_TEXT = 'FilteredBookList does not exist.';
     END IF;
 
-    -- Create a temporary table to hold filtered results
-    CREATE TEMPORARY TABLE TempFilteredList AS
+    -- Create a working table to hold the filtered results
+    CREATE TABLE IF NOT EXISTS WorkingFilteredList (
+        book_id INT,
+        book_title VARCHAR(256),
+        release_date DATE,
+        genres VARCHAR(256), -- Aggregated genres
+        publisher_name VARCHAR(128),
+        author_name VARCHAR(128),
+        series_name VARCHAR(128)
+    );
+
+    -- Clear the working table
+    TRUNCATE TABLE WorkingFilteredList;
+
+    -- Populate the working table with aggregated genres
+    INSERT INTO WorkingFilteredList (book_id, book_title, release_date, genres, publisher_name, author_name, series_name)
     SELECT 
-        book_id,
-        book_title,
+        book_id, 
+        book_title, 
         release_date,
-        genres,
+        GROUP_CONCAT(DISTINCT genre_name ORDER BY genre_name SEPARATOR ', ') AS genres, -- Aggregate genres
         publisher_name,
         author_name,
-        series_name,
-        rating,
-        comments
+        series_name
     FROM FilteredBookList
     WHERE 
-        (genreName_p IS NULL OR FIND_IN_SET(genreName_p, genres)) AND
+        (genreName_p IS NULL OR FIND_IN_SET(genreName_p, genre_name)) AND -- Match genre within aggregated genres
         (bookName_p IS NULL OR book_title = bookName_p) AND
         (publisherName_p IS NULL OR publisher_name = publisherName_p) AND
         (authorName_p IS NULL OR author_name = authorName_p) AND
-        (seriesName_p IS NULL OR series_name = seriesName_p);
+        (seriesName_p IS NULL OR series_name = seriesName_p)
+    GROUP BY book_id, book_title, release_date, publisher_name, author_name, series_name;
 
     -- Replace FilteredBookList with the filtered results
     TRUNCATE TABLE FilteredBookList;
-    INSERT INTO FilteredBookList 
-    SELECT * FROM TempFilteredList;
+    INSERT INTO FilteredBookList (book_id, book_title, release_date, genre_name, publisher_name, author_name, series_name)
+    SELECT 
+        book_id, 
+        book_title, 
+        release_date, 
+        genres AS genre_name, -- Store aggregated genres in FilteredBookList
+        publisher_name, 
+        author_name, 
+        series_name 
+    FROM WorkingFilteredList;
 
-    -- Drop the temporary table
-    DROP TEMPORARY TABLE TempFilteredList;
+    -- Drop the working table (optional if you want it only temporary)
+    DROP TABLE IF EXISTS WorkingFilteredList;
 
     -- Return the updated FilteredBookList
     SELECT * FROM FilteredBookList;
@@ -160,6 +176,7 @@ END $$
 DELIMITER ;
 DELIMITER $$
 
+-- Add or Update Book Rating
 CREATE PROCEDURE AddOrUpdateBookRating (
     IN username_p VARCHAR(64),
     IN bookId_p INT,
@@ -173,13 +190,17 @@ BEGIN
         SET MESSAGE_TEXT = 'Rating score must be between 1 and 5.';
     END IF;
 
-    -- Try to update the existing rating
-    UPDATE book_rating
-    SET text = ratingText_p, score = ratingScore_p
-    WHERE user_name = username_p AND book_id = bookId_p;
-
-    -- If no rows were updated, insert a new rating
-    IF ROW_COUNT() = 0 THEN
+    -- Check if the rating already exists
+    IF EXISTS (
+        SELECT 1 FROM book_rating
+        WHERE user_name = username_p AND book_id = bookId_p
+    ) THEN
+        -- Update the existing rating
+        UPDATE book_rating
+        SET text = ratingText_p, score = ratingScore_p
+        WHERE user_name = username_p AND book_id = bookId_p;
+    ELSE
+        -- Insert a new rating
         INSERT INTO book_rating (user_name, book_id, text, score)
         VALUES (username_p, bookId_p, ratingText_p, ratingScore_p);
     END IF;
@@ -360,45 +381,44 @@ Test cases:
 */
 CALL return_list_name_of_user('bob');
 
+/*
+Third pass at procedure for retrieving books from a specific list with new DB design
+*/
 DELIMITER $$
-
-CREATE PROCEDURE fetch_books_in_list(
-    IN book_list_name_p VARCHAR(64),
-    IN username_p VARCHAR(64)
+CREATE PROCEDURE fetch_books_in_list(book_list_name_p VARCHAR(64)
 )
 BEGIN
-    SELECT
-        b.book_id,
+	SELECT
+		b.book_id,
         b.book_title,
         b.release_date,
-        GROUP_CONCAT(DISTINCT g.genre_name ORDER BY g.genre_name SEPARATOR ', ') AS genres,
+        GROUP_CONCAT(DISTINCT g.genre_name) AS genres,
         a.author_name,
         p.publisher_name,
         s.series_name,
         br.score AS rating,
         br.text AS comments
-    FROM book_list_book blb
-    JOIN book_list bl ON blb.book_list_name = bl.list_name
-    JOIN book b USING(book_id)
-    LEFT JOIN book_genre bg USING(book_id)
-    LEFT JOIN genre g USING(genre_name)
-    LEFT JOIN author a USING(author_id)
-    LEFT JOIN publisher p USING(publisher_id)
-    LEFT JOIN book_series bs USING(book_id)
-    LEFT JOIN series s USING(series_id)
-    LEFT JOIN book_rating br 
-        ON b.book_id = br.book_id AND br.user_name = username_p -- Filter by specific user
-    WHERE bl.list_name = book_list_name_p
+	FROM book_list_book blb
+		JOIN book_list bl ON blb.book_list_name = bl.list_name
+		JOIN book b USING(book_id)
+        LEFT JOIN book_genre bg USING(book_id)
+        LEFT JOIN genre g USING(genre_name)
+        LEFT JOIN author a USING(author_id)
+        LEFT JOIN publisher p USING(publisher_id)
+        LEFT JOIN book_series bs USING(book_id)
+        LEFT JOIN series s USING(series_id)
+        LEFT JOIN book_rating br ON b.book_id = br.book_id
+	WHERE bl.list_name = book_list_name_p
     GROUP BY b.book_id, b.book_title, b.release_date, a.author_name, p.publisher_name, s.series_name, br.score, br.text
     ORDER BY b.book_id;
 END $$
 
 DELIMITER ;
-
+        
 SELECT @@sql_mode;
 
 -- Test case:
-CALL fetch_books_in_list('test_list', 's');
+CALL fetch_books_in_list('test_list');
 
 /*
 Procedure that creates a new user book list
@@ -534,6 +554,5 @@ END $$
 DELIMITER ;
 
 CALL DateRangeUserBooks('s');
-
 
 

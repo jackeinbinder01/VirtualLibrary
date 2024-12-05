@@ -1,9 +1,11 @@
 import os
+
 import pymysql
 import csv
 from datetime import datetime
 from tabulate import tabulate
 from PyQt6.QtWidgets import QApplication, QFileDialog
+
 
 def connect_to_database():
     """
@@ -31,6 +33,7 @@ def connect_to_database():
             retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
             if retry != 'y':
                 return None
+
 
 def login_options(connection):
     while True:
@@ -61,13 +64,15 @@ def login_options(connection):
                     retry = input("Try again y/n")
                     if retry.strip().lower() == 'n':
                         return False
-        else: 
+        else:
             print("invalid input please try again")
+
 
 def get_username_password():
     username = input("Please enter your Virtual Library username: ")
     password = input("Please enter your Virtual Library password: ")
     return username, password
+
 
 def create_user(connection):
     username, password = get_username_password()
@@ -105,9 +110,6 @@ def create_user(connection):
         creation_conn.close()
 
 
-
-
-
 def login_user(connection):
     username, password = get_username_password()
     try:
@@ -131,8 +133,8 @@ def login_user(connection):
         return False
     finally:
         login_conn.close()
-        
-        
+
+
 def get_list(search_param, connection):
     # Replace empty strings with None to match SQL's NULL behavior
     search_param = [param if param != "" else None for param in search_param]
@@ -145,7 +147,7 @@ def get_list(search_param, connection):
         book_list = get_list_conn.fetchall()
         get_list_conn.close()
         print_books_tabular(book_list)
-       
+
 
     except pymysql.Error as e:
         code, msg = e.args
@@ -178,28 +180,29 @@ def filter_current_list(search_param, connection):
     except Exception as e:
         print(f"Unexpected error: {e}")
 
-        
+
 def drop_current_list(connection):
     try:
         drop_list = connection.cursor()
         drop_list.callproc("DropFilteredList")
         drop_list.close()
         print("the list has been cleared")
-        
+
     except Exception as e:
         # Catch any unexpected exceptions
         print(f"Unexpected error: {e}")
-        
+
+
 def get_search_param(username):
     print("please fill out the questions below, no response is acceptable")
-    search_param = [ input("What is the name of the genre: "),
-    input("the book name: "),
-    input("the last name of the publisher: "),
-    input("The author name: "),
-    input("The series name: "),
-    username
-    ]
+    search_param = [input("What is the name of the genre: "),
+                    input("the book name: "),
+                    input("the last name of the publisher: "),
+                    input("The author name: "),
+                    input("The series name: ")
+                    ]
     return search_param
+
 
 def main_menu():
     answer = input(f"Please select from the following options:\n"
@@ -210,23 +213,29 @@ def main_menu():
 
 
 def search_menu(current_list=None):
-    print("welcome to the search menu!")
-    answer = input("1. if you would like to search for books by genre, publisher,"
-                " author name, book name, or series name\n2. to add a specific book by book id"
-                " to a list\n3. to remove a specific book by book id\n4. add/update a rating on a"
-                " book by book id\nr to return to main menu\n")
+    print("\nWelcome to the search menu!")
+
+    print("Please select from the following options:")
+    answer = input("\n1. search for books by genre, publisher, author name, book name, or series name"
+                   "\n2. add a specific book by book id to a list"
+                   "\n3. remove a specific book by book id"
+                   "\n4. add/update a rating on a book by book id"
+                   "\n5. add a URL to access a copy of a book"
+                   "\nq. return to the main menu\n")
     return answer
 
 
 def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
-    answer = input("1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\n5. import a book list from a csv file\nr. return to main menu\n")
+    answer = input(
+        "1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\n5. import a book list from a csv file\nr. return to main menu\n")
     return answer
+
 
 def application_logic(connection, username):
     leave = True
-    while leave: 
+    while leave:
         connection.commit()
         main_menu_answer = main_menu()
 
@@ -252,7 +261,7 @@ def search_logic(connection, username):
         search_menu_answer = search_menu(username)
 
         # Quit to main menu
-        if search_menu_answer.strip().lower() == 'r':
+        if search_menu_answer.strip().lower() == 'q':
             print("Returning to main menu...")
             break
 
@@ -268,8 +277,46 @@ def search_logic(connection, username):
         elif search_menu_answer.strip() == '4':  # Update a rating on a book
             update_rating_logic(connection, username)
 
+        elif search_menu_answer.strip() == '5':  # Add a URL to the database
+            add_url_to_db(connection)
         else:
             print("Invalid input. Please try again.")
+
+
+def add_url_to_db(connection):
+    book_name = input("Enter the name of the book that the URL links to: ")
+    book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
+    url = input("Enter the URL: ")
+
+    while True:
+        book_format = input("Enter the format of the book: \n"
+                            "\n1. Hardcover\n"
+                            "2. Paperback\n"
+                            "3. PDF\n"
+                            "4. eBook\n"
+                            "5. Audiobook\n\n").strip().lower()
+        valid_formats = {'1': 'Hardcover',
+                         '2': 'Paperback',
+                         '3': 'PDF',
+                         '4': 'eBook',
+                         '5': 'Audiobook',
+                         'hardcover': 'Hardcover',
+                         'paperback': 'Paperback',
+                         'pdf': 'PDF',
+                         'ebook': 'eBook',
+                         'audiobook': 'Audiobook'}
+        if book_format in valid_formats:
+            book_format = valid_formats[book_format]
+            break
+        else:
+            print(f"\nInvalid book format {book_format}. Please try again.")
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"CALL add_link('{url}', '{book_format}', '{book_name}', '{book_release_date}')")
+        print("\nURL added successfully!")
+    except pymysql.Error as e:
+        print(f"\nURL could not be added: {e}")
 
 
 def search_books(connection, username):
@@ -297,8 +344,8 @@ def manage_lists_logic(connection, username):
         list_menu_answer = manage_menu(username)
 
         if list_menu_answer.strip() == '1':
-            book_list_name = input("Enter the name of the book list you wish to create: \n")
-            
+            book_list_name = input("\nEnter the name of the book list you wish to create: \n")
+
             if not book_list_name:
                 print("Book list name cannot be empty. Please try again.")
                 continue
@@ -310,8 +357,8 @@ def manage_lists_logic(connection, username):
             if status_message:
                 print(f"Result: {status_message}")
             else:
-                    print("An error occurred while creating the book list.")
-        
+                print("An error occurred while creating the book list.")
+
         elif list_menu_answer.strip() == '2':
             print_user_book_lists(connection, username)
 
@@ -340,14 +387,15 @@ def update_rating_logic(connection, username):
             correct_book_bool = True
     while True:
         score = input("Enter a number (1 - 5):\n").strip()
-        if  0 < int(score) < 6:
+        if 0 < int(score) < 6:
             score = int(score)
             break
         else:
             print("Invalid input")
     comment = input(f"Write some thoughts on why you gave {book_title} a {score}: ").strip()
     rate_book(username, book_id, score, comment, connection)
-    
+
+
 def grab_book_by_id(connection, operation):
     while True:
         book_id = input(f"What is the ID number of the book you are looking to {operation}: ")
@@ -355,12 +403,13 @@ def grab_book_by_id(connection, operation):
         correct_book = input("Is this the correct book? y/n\n")
         if correct_book.lower().strip() == 'y':
             return book_id, book_title
-        
+
         if correct_book.lower().strip() == 'n':
             print("Try a different ID")
         else:
             print("Invalid input")
-    
+
+
 def rate_book(username, book_id, score, comment, connection):
     try:
         book_rating = connection.cursor()
@@ -370,13 +419,14 @@ def rate_book(username, book_id, score, comment, connection):
         print("Rating successful\nReturning to search menu")
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
-        
+
+
 def add_book_by_id_logic(connection, username):
     correct_book_bool = False
     while not correct_book_bool:
-       book_id, book_title = grab_book_by_id(connection, "add")
-       if book_title is not None and book_id is not None:
-           correct_book_bool = True
+        book_id, book_title = grab_book_by_id(connection, "add")
+        if book_title is not None and book_id is not None:
+            correct_book_bool = True
     list_name = operate_on_user_book_lists(connection, username, "add")
     if list_name == 0:
         print(f"{book_title} needs to be added to a list, returning to search menu")
@@ -388,14 +438,14 @@ def add_book_by_id_logic(connection, username):
             connection.commit()
             add_book.close()
             print(f"Here is updated the list of books in {list_name}")
-            fetch_books_in_list(connection, list_name, username)
+            fetch_books_in_list(connection, list_name)
         except pymysql.MySQLError as e:
             print(f"Database error: {e}")
 
 
-def remove_book_by_id_logic(connection, username): # TODO
+def remove_book_by_id_logic(connection, username):  # TODO
     list_name = operate_on_user_book_lists(connection, username, "delete")
-    fetch_books_in_list(connection, list_name, username)
+    fetch_books_in_list(connection, list_name)
     try:
         remove_book = connection.cursor()
         book_id, book_title = grab_book_by_id(connection, "delete")
@@ -406,12 +456,13 @@ def remove_book_by_id_logic(connection, username): # TODO
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
 
+
 def search_book_by_id(connection, book_id):
     try:
         # Call the stored procedure
         search_a_book = connection.cursor()
         search_a_book.callproc("GetBookById", (book_id,))
-        
+
         # Fetch the results
         books = search_a_book.fetchall()
         search_a_book.close()
@@ -427,10 +478,13 @@ def search_book_by_id(connection, book_id):
             return
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
- 
+
+
 '''
 Helper funtion to create new user book list
-'''        
+'''
+
+
 def create_user_book_list(connection, user_name, book_list_name):
     try:
         with connection.cursor() as cursor:
@@ -451,7 +505,8 @@ def create_user_book_list(connection, user_name, book_list_name):
         print(f"Database error: {e}")
         return None
 
-def print_list_names_of_user(connection,username):
+
+def print_list_names_of_user(connection, username):
     try:
         with connection.cursor() as cursor:
             # Call the stored procedure
@@ -473,10 +528,13 @@ def print_list_names_of_user(connection,username):
                 return
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
-        
+
+
 '''
 Helper function to retrieve and display a user's saved book lists
 '''
+
+
 def print_user_book_lists(connection, username):
     try:
         with connection.cursor() as cursor:
@@ -518,7 +576,7 @@ def print_user_book_lists(connection, username):
                     if 1 <= selected_index <= len(book_lists):
                         selected_list = book_lists[selected_index - 1]['list_name']
 
-                        fetch_books_in_list(connection, selected_list, username)
+                        fetch_books_in_list(connection, selected_list)
 
                     else:
                         print("Invalid selection. Please choose a valid number.")
@@ -533,11 +591,13 @@ def print_user_book_lists(connection, username):
 '''
 Helper function to call procedure to retrieve books from book list
 '''
-def fetch_books_in_list(connection, book_list_name, username):
+
+
+def fetch_books_in_list(connection, book_list_name):
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
-            cursor.callproc('fetch_books_in_list', (book_list_name, username))
+            cursor.callproc('fetch_books_in_list', (book_list_name,))
 
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
@@ -554,9 +614,12 @@ def fetch_books_in_list(connection, book_list_name, username):
         print(f"Database error: {e}")
         return []
 
+
 '''
 Helper function to export book list to a csv file.
 '''
+
+
 def export_user_book_list(connection, username):
     try:
         with connection.cursor() as cursor:
@@ -589,7 +652,7 @@ def export_user_book_list(connection, username):
             selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
-            books = fetch_books_in_list(connection, selected_list, username)
+            books = fetch_books_in_list(connection, selected_list)
 
             # Export the book list to a CSV file
             if books:
@@ -604,9 +667,12 @@ def export_user_book_list(connection, username):
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
 
+
 '''
 Helper function that exports a given book list to a CSV file
 '''
+
+
 def export_book_list_to_csv(book_list_name, books):
     try:
         file_name = f"{book_list_name.replace(' ', '_')}_book_list.csv"
@@ -615,7 +681,8 @@ def export_book_list_to_csv(book_list_name, books):
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             #write header row
-            writer.writerow(["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
+            writer.writerow(
+                ["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
             # Write book data rows
             for book in books:
@@ -726,13 +793,15 @@ def import_book_list_from_csv(connection, username):
                         print(f"Attempted add book to user list: {e}")
                 if series != '':
                     try:
-                        cursor.execute(f"CALL add_book_to_series('{book_title}', '{formatted_release_date}', '{series}')")
+                        cursor.execute(
+                            f"CALL add_book_to_series('{book_title}', '{formatted_release_date}', '{series}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to series: {e}")
 
                 if all(field != '' for field in [url, format_type]):
                     try:
-                        cursor.execute(f"CALL add_link('{url}','{format_type}','{book_title}', '{formatted_release_date}')")
+                        cursor.execute(
+                            f"CALL add_link('{url}','{format_type}','{book_title}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add url: {e}")
 
@@ -755,9 +824,12 @@ def import_book_list_from_csv(connection, username):
     finally:
         cursor.close()
 
+
 '''
 Helper function that prints books in tabular format
 '''
+
+
 def print_books_tabular(book_list):
     if not book_list:
         print("No books in book list to display.")
@@ -804,7 +876,8 @@ def print_books_tabular(book_list):
         print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
-        
+
+
 def operate_on_user_book_lists(connection, username, operation):
     try:
         with connection.cursor() as cursor:
@@ -836,10 +909,9 @@ def operate_on_user_book_lists(connection, username, operation):
                         print(f"{index}. {book_list['list_name']}")
 
                     # add option to return back to management menu
-                    
+
                     print(f"{len(book_lists) + 1}. Create a new list")
                     print(f"{len(book_lists) + 2}. Return to management menu")  # Option to return
-
 
                     # Prompt user to select a book list
                     try:
@@ -869,8 +941,7 @@ def operate_on_user_book_lists(connection, username, operation):
                             print("Invalid selection. Please choose a valid number.")
                     except ValueError as e:
                         print(f"Invalid input: {e}. Please enter a number.")
-                        
-                        
+
             if operation == "delete":
                 while True:
                     # Display the user's saved book lists
@@ -879,9 +950,8 @@ def operate_on_user_book_lists(connection, username, operation):
                         print(f"{index}. {book_list['list_name']}")
 
                     # add option to return back to management menu
-                    
-                    print(f"{len(book_lists) + 1}. Return to management menu")  # Option to return
 
+                    print(f"{len(book_lists) + 1}. Return to management menu")  # Option to return
 
                     # Prompt user to select a book list
                     try:
@@ -909,9 +979,12 @@ def operate_on_user_book_lists(connection, username, operation):
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
 
+
 '''
 Helper function to delete a book list
 '''
+
+
 def delete_book_list(connection, username):
     try:
         with connection.cursor() as cursor:
