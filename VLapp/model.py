@@ -65,7 +65,7 @@ def login_options(connection):
                     if retry.strip().lower() == 'n':
                         return False
         else:
-            print("invalid input please try again")
+            print(f"Invalid input '{answer}', please try again\n")
 
 
 def get_username_password():
