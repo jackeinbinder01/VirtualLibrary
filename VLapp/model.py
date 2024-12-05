@@ -755,9 +755,9 @@ def create_user_book_list(connection, user_name, book_list_name):
             # print(f"Procedure result: {result}")
 
             if result and 'status_message' in result:
-                return result['status_message']
-            else:
-                return "No status message returned."
+                return result['status_message\n']
+            # else:
+            #     return "No status message returned."
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         return None
