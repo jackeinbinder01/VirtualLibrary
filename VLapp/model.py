@@ -85,7 +85,7 @@ def create_user(connection, is_admin=False):
         # Commit changes to ensure the user is saved
         connection.commit()
 
-        if is_admin:
+        if not is_admin:
 
             # Call LoginUser to log in
             creation_conn.callproc('LoginUser', (username, password))
