@@ -59,14 +59,14 @@ def login_options(connection):
             while True:
                 username = create_user(connection)
                 if username != False:
-                    print("Account created! You have been automatically logged in")
+                    print("Account created! You have been automatically logged in.")
                     return username
                 else:
-                    retry = input("Try again (y/n)")
+                    retry = input("Try again (y/n).")
                     if retry.strip().lower() == 'n':
                         return False
         else:
-            print(f"Invalid input '{answer}', please try again\n")
+            print(f"Invalid input '{answer}', please try again.\n")
 
 
 def get_username_password():
@@ -82,7 +82,7 @@ def create_user(connection, is_admin=False):
 
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
-        print("User created successfully")
+        print("User created successfully.")
         # Commit changes to ensure the user is saved
         connection.commit()
 
@@ -196,7 +196,7 @@ def drop_current_list(connection):
 
 
 def get_search_param(username):
-    print("please fill out the questions below, no response is acceptable")
+    print("Please fill out the questions below, no response is acceptable.\n")
     search_param = [input("What is the name of the genre: "),
                     input("The book name: "),
                     input("The last name of the publisher: "),
@@ -281,7 +281,7 @@ def admin_create_user(connection):
     password = input("Enter the user's password: ").strip()
 
     if username == '' or password == '':
-        print("\nCreate user error: Username and/or password cannot be blank")
+        print("\nCreate user error: Username and/or password cannot be blank.")
         manage_users_menu(connection)
         return
 
@@ -537,7 +537,7 @@ def search_logic(connection, username):
         elif search_menu_answer.strip() == '6':  # go to analysis menu
             analysis_logic(connection, username)
         else:
-            print("Invalid input. Please try again.")
+            print(f"Invalid input '{search_menu_answer}'. Please try again.")
 
 
 def search_books(connection, username):
@@ -547,7 +547,7 @@ def search_books(connection, username):
 
         # Refine search loop
         while True:
-            user_continue = input("Would you like to further refine the list (y/n): ").strip().lower()
+            user_continue = input("Would you like to further refine the list? (y/n): ").strip().lower()
             if user_continue == "y":
                 search_param = get_search_param(username)
                 filter_current_list(search_param, connection)
@@ -556,7 +556,7 @@ def search_books(connection, username):
                 print("Returning to search menu...")
                 return
             else:
-                print("Invalid input. Please enter 'y' or 'n'.")
+                print(f"Invalid input '{user_continue}'. Please enter 'y' or 'n'.")
 
 
 def manage_lists_logic(connection, username):
@@ -612,8 +612,8 @@ def update_rating_logic(connection, username):
             score = int(score)
             break
         else:
-            print("Invalid input")
-    comment = input(f"Write some thoughts on why you gave {book_title} a {score}: ").strip()
+            print(f"Invalid input '{score}'")
+    comment = input(f"Write some thoughts on why you gave {book_title} a score of {score}: ").strip()
     rate_book(username, book_id, score, comment, connection)
 
 
