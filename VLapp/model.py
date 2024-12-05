@@ -695,18 +695,18 @@ def add_book_by_id_logic(connection, username):
             connection.commit()
             add_book.close()
             print(f"Here is updated the list of books in {list_name}")
-            fetch_books_in_list(connection, list_name)
+            fetch_books_in_list(connection, username, list_name)
         except pymysql.MySQLError as e:
             print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username):  # TODO
     list_name = operate_on_user_book_lists(connection, username, "delete")
-    fetch_books_in_list(connection, list_name)
+    fetch_books_in_list(connection, username, list_name)
     try:
         remove_book = connection.cursor()
         book_id, book_title = grab_book_by_id(connection, "delete")
-        remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id, "@remove_status"))
+        remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id))
         connection.commit()
         remove_book.close()
 
@@ -752,7 +752,7 @@ def create_user_book_list(connection, user_name, book_list_name):
             result = cursor.fetchone()
 
             # Debug: Log the fetched result
-            print(f"Procedure result: {result}")
+            # print(f"Procedure result: {result}")
 
             if result and 'status_message' in result:
                 return result['status_message']
@@ -833,7 +833,7 @@ def print_user_book_lists(connection, username):
                     if 1 <= selected_index <= len(book_lists):
                         selected_list = book_lists[selected_index - 1]['list_name']
 
-                        fetch_books_in_list(connection, selected_list)
+                        fetch_books_in_list(connection, username, selected_list)
 
                     else:
                         print("Invalid selection. Please choose a valid number.")
@@ -850,11 +850,11 @@ Helper function to call procedure to retrieve books from book list
 '''
 
 
-def fetch_books_in_list(connection, book_list_name):
+def fetch_books_in_list(connection, username,  book_list_name):
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
-            cursor.callproc('fetch_books_in_list', (book_list_name,))
+            cursor.callproc('fetch_books_in_list', (book_list_name, username))
 
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
@@ -909,13 +909,13 @@ def export_user_book_list(connection, username):
             selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
-            books = fetch_books_in_list(connection, selected_list)
+            books = fetch_books_in_list(connection, username, selected_list)
 
             # Export the book list to a CSV file
             if books:
                 export_book_list_to_csv(selected_list, books)
-            else:
-                print(f"No books found in the book list '{selected_list}'.")
+            # else:
+                # print(f"No books found in the book list '{selected_list}'.")
         else:
             print("Invalid selection. Please choose a valid number.")
     except ValueError:
@@ -1348,7 +1348,7 @@ def user_genre_analysis(connection, username):
             result = genre_analysis.fetchall()
 
             if not result:
-                print(f"There are no books in your lists {username}!")
+                print(f"\nThere are no books in your lists {username}!")
                 return
             print("The genres you read are:\n")
             for key in result:
@@ -1366,7 +1366,10 @@ def user_most_read_genre_analysis(connection, username):
         with connection.cursor() as most_read_genre_analysis:
             most_read_genre_analysis.callproc("MostReadGenre", (username,))
             result = most_read_genre_analysis.fetchall()
-
+            if not result:
+                print(f"\nThere are no books in your lists {username}!")
+                return
+            
             if len(result) > 1:
                 print(f" {username}'s most read genres are\n")
                 for genre in result:
@@ -1375,6 +1378,7 @@ def user_most_read_genre_analysis(connection, username):
                 genre = result[0]
                 print(f"{username}'s most read genre is:\n")
                 print(f"- {genre.get("genre_name")}")
+            print("\n")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
@@ -1386,9 +1390,6 @@ def user_author_analysis(connection, username):
             author_analysis.callproc("AuthorDiversity", (username,))
             result = author_analysis.fetchall()
 
-            if not result:
-                print(f"There are no books in your lists {username}!")
-                return
             print("The Authors you read are:\n")
             for key in result:
                 author = key.get("unique_authors")
@@ -1405,15 +1406,18 @@ def user_most_read_author_analysis(connection, username):
         with connection.cursor() as most_read_author:
             most_read_author.callproc("TopAuthor", (username,))
             result = most_read_author.fetchall()
-
+            if not result:
+                print(f"There are no books in your lists {username}!")
+                return
             if len(result) > 1:
                 print(f"{username}'s most read genres are\n")
                 for author in result:
                     print(f"- {author.get("author_name")}")
+                print("\n")
             else:
                 author = result[0]
                 print(f"{username}'s most read genre is:\n")
-                print(f"- {author.get("author_name")}")
+                print(f"- {author.get("author_name")}\n\n")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
@@ -1424,12 +1428,12 @@ def user_book_count_analysis(connection, username):
         with connection.cursor() as book_num_analysis:
             book_num_analysis.callproc("CountUserBooks", (username,))
             result = book_num_analysis.fetchall()
-
+            
             total_books = result[0].get("total_unique_books")
             book = "books"
             if total_books == 1:
                 book = "book"
-            print(f"You have a total of {total_books} {book} in your lists\n\n")
+            print(f"\nYou have a total of {total_books} {book} in your lists\n\n")
 
     except Exception as e:
         print(f"Unexpected error: {e}")
