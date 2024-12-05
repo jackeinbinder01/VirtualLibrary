@@ -1,3 +1,14 @@
+import csv
+import os
+import sys
+from datetime import datetime
+
+import pymysql
+from PyQt5.QtWidgets import QApplication, QFileDialog
+
+from VirtualLibrary.VLapp.model import manage_menu, create_user_book_list, add_book_by_id_logic, \
+    remove_book_by_id_logic, print_books_tabular
+
 
 def manage_lists_logic(connection, username):
     while True:
@@ -67,21 +78,17 @@ def print_user_book_lists(connection, username):
                     print(f"{index}. {book_list['list_name']}")
 
                 # add option to return back to management menu
-                print(f"{len(book_lists) + 1}. Return to Management Menu")
+                print("r. Return to Management menu")
 
                 # Prompt user to select a book list
-                try:
-                    selected_index = (input("\nEnter the number of the book list you want: "))
 
-                    if not selected_index.isdigit():
-                        raise ValueError(f"Invalid input '{selected_index}'. Please enter a valid number.")
-                        continue
+                selected_index = (input("\nEnter the number of the book list you want: "))
 
+                if selected_index.lower() == 'r':
+                    return
+
+                if selected_index.isdigit():
                     selected_index = int(selected_index)
-
-                    # if user selects option to return to management menu
-                    if selected_index == len(book_lists) + 1:
-                        return
 
                     # validate selected index
                     if 1 <= selected_index <= len(book_lists):
@@ -91,8 +98,8 @@ def print_user_book_lists(connection, username):
 
                     else:
                         print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
-                except ValueError as e:
-                    print(f"Invalid input: {e}. Please enter a number.")
+                else:
+                    print(f"Invalid input '{selected_index}'. Please enter a number or 'r'.")
 
 
     except pymysql.MySQLError as e:
