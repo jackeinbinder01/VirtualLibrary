@@ -59,7 +59,7 @@ def login_options(connection):
             while True:
                 username = create_user(connection)
                 if username != False:
-                    print("Account created! You have been automatically logged in.")
+                    print("You have been automatically logged in.\n")
                     return username
                 else:
                     retry = input("Please try again. (y/n)\n")
@@ -82,7 +82,7 @@ def create_user(connection, is_admin=False):
 
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
-        print("User created successfully.")
+        print("\nUser account created successfully!")
         # Commit changes to ensure the user is saved
         connection.commit()
 
@@ -217,7 +217,7 @@ def main_menu():
 
 
 def admin_main_menu():
-    print("Please select from the following options:\n")
+    print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
@@ -229,7 +229,7 @@ def admin_main_menu():
 def manage_users_menu(connection):
     print("\nWelcome to the Manage Users Menu!\n"
           "Please select from the following options:\n")
-    answer = input("\n1. View users in database"
+    answer = input("1. View users in database"
                    "\n2. Create a user account"
                    "\n3. Delete a user account"
                    "\n4. Update a user's information"
