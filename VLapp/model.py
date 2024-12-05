@@ -318,7 +318,7 @@ def admin_update_user_information(connection):
             try:
                 cursor = connection.cursor()
                 cursor.execute(f"CALL update_password('{username}', '{new_password}')")
-                print(f"\nSuccessfully '{username}'s password!\n")
+                print(f"\nSuccessfully updated {username}'s password!\n")
             except pymysql.Error as e:
                 print(f"\nUpdate user error: {e}\n")
 
@@ -330,12 +330,28 @@ def admin_update_user_information(connection):
             if old_username == new_username:
                 print("\nUpdate user error: New username must be different than the original username.")
                 admin_update_user_information(connection)
+                return
             if new_username == '':
                 print("\nUpdate user error: New username cannot be blank.")
                 admin_update_user_information(connection)
+                return
             if new_password == '':
                 print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
+                return
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_username('{old_username}', '{new_username}')")
+                print(f"\nSuccessfully updated username '{old_username}' to '{new_username}'!")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
+
+            try:
+                cursor = connection.cursor()
+                cursor.execute(f"CALL update_password('{new_username}', '{new_password}')")
+                print(f"Successfully updated {new_username}'s password!\n")
+            except pymysql.Error as e:
+                print(f"\nUpdate user error: {e}\n")
         case 'r':
             manage_users_menu(connection)
         case _:
