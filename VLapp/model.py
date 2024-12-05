@@ -201,7 +201,8 @@ def get_search_param(username):
                     input("The book name: "),
                     input("The last name of the publisher: "),
                     input("The author name: "),
-                    input("The series name: ")
+                    input("The series name: "),
+                    username
                     ]
     return search_param
 
@@ -1139,12 +1140,12 @@ def print_books_tabular(book_list):
     custom_headers = list(key_to_header.values())
 
     # Debugging output
-    print("Formatted books (final structure):", formatted_books)
-    print("Custom headers:", custom_headers)
+    # print("Formatted books (final structure):", formatted_books)
+    # print("Custom headers:", custom_headers)
 
     try:
         # Print table using tabulate
-        print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
+        print(tabulate.tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
 
