@@ -1,4 +1,6 @@
-
+import pymysql
+import tabulate
+import management
 
 
 def admin_view_users(connection, admin_user_name):
@@ -20,7 +22,7 @@ def admin_view_users(connection, admin_user_name):
                 ]
                 table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
                 print(f'{table}')
-                manage_users_menu(connection, admin_user_name)
+                management.manage_users_menu(connection, admin_user_name)
     except pymysql.Error as e:
         code, msg = e.args
         print(f"View users error: {code} - {msg}")
@@ -32,7 +34,7 @@ def admin_create_user(connection, admin_user_name):
 
     if username == '' or password == '':
         print("\nCreate user error: Username and/or password cannot be blank.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -48,7 +50,7 @@ def admin_delete_user(connection, admin_user_name):
 
     if username == '':
         print("\nDelete User Error: Username cannot be blank.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -133,7 +135,7 @@ def admin_update_user_information(connection, admin_user_name):
             except pymysql.Error as e:
                 print(f"\nUpdate user error: {e}\n")
         case 'r':
-            manage_users_menu(connection, admin_user_name)
+            management.manage_users_menu(connection, admin_user_name)
         case _:
             print(f"\nInvalid option '{answer}'. Please try again.")
             admin_update_user_information(connection, admin_user_name)
@@ -144,13 +146,13 @@ def make_user_admin(connection, admin_user_name):
 
     if username == '':
         print("\nMake user admin error: Username cannot be blank.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT made an Admin.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -166,13 +168,13 @@ def demote_user_from_admin(connection, admin_user_name):
 
     if username == '':
         print("\nDemote user from admin error: Username cannot be blank.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT demoted from Admin.")
-        manage_users_menu(connection, admin_user_name)
+        management.manage_users_menu(connection, admin_user_name)
         return
 
     try:
