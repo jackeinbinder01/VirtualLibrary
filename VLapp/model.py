@@ -388,14 +388,14 @@ def add_book_by_id_logic(connection, username):
             connection.commit()
             add_book.close()
             print(f"Here is updated the list of books in {list_name}")
-            fetch_books_in_list(connection, list_name)
+            fetch_books_in_list(connection, list_name, username)
         except pymysql.MySQLError as e:
             print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username): # TODO
     list_name = operate_on_user_book_lists(connection, username, "delete")
-    fetch_books_in_list(connection, list_name)
+    fetch_books_in_list(connection, list_name, username)
     try:
         remove_book = connection.cursor()
         book_id, book_title = grab_book_by_id(connection, "delete")
@@ -518,7 +518,7 @@ def print_user_book_lists(connection, username):
                     if 1 <= selected_index <= len(book_lists):
                         selected_list = book_lists[selected_index - 1]['list_name']
 
-                        fetch_books_in_list(connection, selected_list)
+                        fetch_books_in_list(connection, selected_list, username)
 
                     else:
                         print("Invalid selection. Please choose a valid number.")
@@ -533,11 +533,11 @@ def print_user_book_lists(connection, username):
 '''
 Helper function to call procedure to retrieve books from book list
 '''
-def fetch_books_in_list(connection, book_list_name):
+def fetch_books_in_list(connection, book_list_name, username):
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
-            cursor.callproc('fetch_books_in_list', (book_list_name,))
+            cursor.callproc('fetch_books_in_list', (book_list_name, username))
 
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
@@ -589,7 +589,7 @@ def export_user_book_list(connection, username):
             selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
-            books = fetch_books_in_list(connection, selected_list)
+            books = fetch_books_in_list(connection, selected_list, username)
 
             # Export the book list to a CSV file
             if books:
