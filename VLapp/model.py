@@ -3,7 +3,7 @@ import os
 import pymysql
 import csv
 from datetime import datetime
-from tabulate import tabulate
+import tabulate
 from PyQt6.QtWidgets import QApplication, QFileDialog
 import sys
 
@@ -228,24 +228,51 @@ def admin_main_menu():
 def manage_users_menu(connection):
     print("\nWelcome to the Manage Users Menu!")
     answer = input(f"Please select from the following options:\n"
-                   "\n1. Create a user account"
-                   "\n2. Delete a user account"
-                   "\n3. Update a user's information"
-                   "\n4. Make a user an Admin"
-                   "\n5. Demote a user from Admin"
+                   "\n1. View users in database"
+                   "\n2. Create a user account"
+                   "\n3. Delete a user account"
+                   "\n4. Update a user's information"
+                   "\n5. Make a user an Admin"
+                   "\n6. Demote a user from Admin"
                    "\nr. Return to main menu\n\n")
-    match answer:
+    match answer.lower():
         case '1':
-            admin_create_user(connection)
+            view_users(connection)
         case '2':
-            admin_delete_user(connection)
+            admin_create_user(connection)
         case '3':
-            admin_update_user_information(connection)
+            admin_delete_user(connection)
         case '4':
-            make_user_admin(connection)
+            admin_update_user_information(connection)
         case '5':
+            make_user_admin(connection)
+        case '6':
             demote_user_from_admin(connection)
+        case 'r':
+            admin_main_menu()
 
+
+def view_users(connection):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("CALL view_users()")
+        result_tuples = cursor.fetchall()
+        if not result_tuples:
+            print("View users error: No users found in database.")
+        else:
+            if not result_tuples:
+                print("View users error: No users found in database.")
+            else:
+                clean_data = [
+                    {key: ('True' if key == 'is_admin' and value == 1 else value) for key, value in row.items()}
+                    for row in result_tuples
+                ]
+                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
+                print(f'{table}')
+                manage_users_menu(connection)
+    except pymysql.Error as e:
+        code, msg = e.args
+        print(f"View users error: {code} - {msg}")
 
 def admin_create_user(connection):
     username = input("Enter the user's username: ").strip()

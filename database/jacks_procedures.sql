@@ -566,5 +566,21 @@ END //
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS view_users;
+DELIMITER //
+
+CREATE PROCEDURE view_users()
+    BEGIN
+        SELECT
+            u.user_name
+            , u.is_admin
+        FROM user u;
+    END //
+
+DELIMITER ;
+
+
+CALL view_users()
+
 
 
