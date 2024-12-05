@@ -231,7 +231,7 @@ def admin_main_menu():
     return answer
 
 
-def manage_users_menu(connection):
+def manage_users_menu(connection, username):
     print("\nWelcome to the Manage Users Menu!\n"
           "Please select from the following options:\n")
     answer = input("1. View users in database"
@@ -255,7 +255,8 @@ def manage_users_menu(connection):
         case '6':
             demote_user_from_admin(connection)
         case 'r':
-            admin_main_menu()
+            application_logic(connection, username)
+
 
 
 def view_users(connection):
