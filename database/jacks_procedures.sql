@@ -473,3 +473,44 @@ END //
 
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS demote_user_from_admin;
+DELIMITER //
+
+CREATE PROCEDURE demote_user_from_admin(username_p VARCHAR(64))
+
+BEGIN
+    DECLARE username_not_in_db_error VARCHAR(64);
+    DECLARE user_not_admin VARCHAR(64);
+    SET username_not_in_db_error = CONCAT('User, ', username_p, ', does not exist');
+    SET user_not_admin = CONCAT('User, ', username_p, ', was not an Admin');
+
+    IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = username_p
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = username_not_in_db_error;
+    ELSEIF EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE 1=1
+            AND u.user_name = username_p
+            AND u.is_admin = FALSE
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = user_not_admin;
+	ELSE
+        UPDATE user u
+            SET u.is_admin = FALSE
+        WHERE 1=1
+            AND u.user_name = username_p
+            AND u.is_admin = TRUE;
+    END IF;
+
+END //
+
+DELIMITER ;
+

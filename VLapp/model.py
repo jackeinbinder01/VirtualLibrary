@@ -330,11 +330,13 @@ def make_user_admin(connection):
     if username == '':
         print("\nMake user admin error: Username cannot be blank.")
         manage_users_menu(connection)
+        return
 
     confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT made an Admin.")
         manage_users_menu(connection)
+        return
 
     try:
         cursor = connection.cursor()
@@ -350,15 +352,20 @@ def demote_user_from_admin(connection):
     if username == '':
         print("\nDemote user from admin error: Username cannot be blank.")
         manage_users_menu(connection)
+        return
 
     confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
     if confirmation.lower() != 'y':
-        print(f"User '{username}' was NOT demoted from Admin")
+        print(f"\nUser '{username}' was NOT demoted from Admin.")
         manage_users_menu(connection)
+        return
 
-
-
-    print(f"User '{username}' was successfully demoted from Admin!")
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL demote_user_from_admin('{username}')")
+        print(f"\nUser '{username}' was successfully demoted from Admin!\n")
+    except pymysql.Error as e:
+        print(f"\nDemote user from admin error: {e}\n")
 
 
 def search_menu(current_list=None):
