@@ -46,7 +46,7 @@ def login_options(connection):
         answer = input("Please login or create a new account:\n"
                        "\n1. Login to an existing account"
                        "\n2. Create a new account"
-                       "\nq. Quit\n")
+                       "\nq. Quit\n\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -213,7 +213,7 @@ def get_search_param(username):
 
 
 def main_menu():
-    print("Please select from the following options:\n")
+    print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
@@ -231,7 +231,7 @@ def admin_main_menu():
     return answer
 
 
-def manage_users_menu(connection):
+def manage_users_menu(connection, username):
     print("\nWelcome to the Manage Users Menu!\n"
           "Please select from the following options:\n")
     answer = input("1. View users in database"
@@ -255,7 +255,8 @@ def manage_users_menu(connection):
         case '6':
             demote_user_from_admin(connection)
         case 'r':
-            admin_main_menu()
+            application_logic(connection, username)
+
 
 
 def view_users(connection):
@@ -447,7 +448,7 @@ def search_menu(current_list=None):
                    "\n3. Remove a specific book by book id"
                    "\n4. Add/update a rating on a book by book id"
                    "\n5. Add a URL to access a copy of a book"
-                   "\n\nr. Return to the main menu\n")
+                   "\n\nr. Return to the main menu\n\n")
     return answer
 
 
@@ -464,7 +465,7 @@ def manage_menu(username):
         "5. Remove a book from a book list\n"
         "6. Export a book list to csv file\n"
         "7. Import a book list from a csv file\n"
-        "r. Return to main menu\n")
+        "r. Return to main menu\n\n")
     return answer
 
 
@@ -1347,13 +1348,13 @@ def analysis_logic(connection, username):
 def analysis_menu(connection, username):
     user = username
     print("\nWelcome to the User Analytics Menu!\n"
-          "Please select from the following options:\n")
+          "Please select from the following options:")
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
                            f"\n5. View {user}'s most read author"
-                           f"\nr. Return to managment menu\n"
+                           f"\nr. Return to managment menu\n\n"
                            )
     return analysis_input
 
