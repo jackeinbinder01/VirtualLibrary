@@ -1063,6 +1063,7 @@ def import_book_list_from_csv(connection, username):
                             f"CALL add_book_from_import('{book_title}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to db: {e}")
+                        return
                     try:
                         cursor.execute(
                             f"CALL add_book_to_user_list('{username}', '{book_list_name}', '{book_title}', '{formatted_release_date}')")

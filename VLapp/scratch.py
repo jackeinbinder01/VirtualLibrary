@@ -51,7 +51,7 @@ def login_options(connection):
                     print(f"\nWelcome back, {username}!\n")
                     return username
                 else:
-                    retry = input("Try again y/n")
+                    retry = input("Try again (y/n)")
                     if retry.lower() == 'n':
                         return False
 
@@ -59,14 +59,14 @@ def login_options(connection):
             while True:
                 username = create_user(connection)
                 if username != False:
-                    print("Account created! You have been automatically logged in")
+                    print("Account created! You have been automatically logged in.")
                     return username
                 else:
-                    retry = input("Try again y/n")
+                    retry = input("Try again (y/n).")
                     if retry.strip().lower() == 'n':
                         return False
         else:
-            print(f"Invalid input '{answer}', please try again\n")
+            print(f"Invalid input '{answer}', please try again.\n")
 
 
 def get_username_password():
@@ -82,7 +82,7 @@ def create_user(connection, is_admin=False):
 
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
-        print("User created successfully")
+        print("User created successfully.")
         # Commit changes to ensure the user is saved
         connection.commit()
 
@@ -196,12 +196,13 @@ def drop_current_list(connection):
 
 
 def get_search_param(username):
-    print("please fill out the questions below, no response is acceptable")
+    print("Please fill out the questions below, no response is acceptable.\n")
     search_param = [input("What is the name of the genre: "),
                     input("The book name: "),
                     input("The last name of the publisher: "),
                     input("The author name: "),
-                    input("The series name: ")
+                    input("The series name: "),
+                    username
                     ]
     return search_param
 
@@ -280,7 +281,7 @@ def admin_create_user(connection):
     password = input("Enter the user's password: ").strip()
 
     if username == '' or password == '':
-        print("\nCreate user error: Username and/or password cannot be blank")
+        print("\nCreate user error: Username and/or password cannot be blank.")
         manage_users_menu(connection)
         return
 
@@ -446,7 +447,7 @@ def search_menu(current_list=None):
 
 
 def manage_menu(username):
-    print("welcome to the management menu!")
+    print("Welcome to the management menu!")
     # model.print_user_lists_names(username)
     answer = input(
         "1. Create a new book list\n"
@@ -479,7 +480,6 @@ def application_logic(connection, username):
         connection.commit()
 
         user_is_admin = is_user_admin(connection, username)
-
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:
@@ -537,7 +537,7 @@ def search_logic(connection, username):
         elif search_menu_answer.strip() == '6':  # go to analysis menu
             analysis_logic(connection, username)
         else:
-            print("Invalid input. Please try again.")
+            print(f"Invalid input '{search_menu_answer}'. Please try again.")
 
 
 def search_books(connection, username):
@@ -547,7 +547,7 @@ def search_books(connection, username):
 
         # Refine search loop
         while True:
-            user_continue = input("Would you like to further refine the list (y/n): ").strip().lower()
+            user_continue = input("Would you like to further refine the list? (y/n): ").strip().lower()
             if user_continue == "y":
                 search_param = get_search_param(username)
                 filter_current_list(search_param, connection)
@@ -556,7 +556,7 @@ def search_books(connection, username):
                 print("Returning to search menu...")
                 return
             else:
-                print("Invalid input. Please enter 'y' or 'n'.")
+                print(f"Invalid input '{user_continue}'. Please enter 'y' or 'n'.")
 
 
 def manage_lists_logic(connection, username):
@@ -612,8 +612,8 @@ def update_rating_logic(connection, username):
             score = int(score)
             break
         else:
-            print("Invalid input")
-    comment = input(f"Write some thoughts on why you gave {book_title} a {score}: ").strip()
+            print(f"Invalid input '{score}'")
+    comment = input(f"Write some thoughts on why you gave {book_title} a score of {score}: ").strip()
     rate_book(username, book_id, score, comment, connection)
 
 
@@ -621,7 +621,7 @@ def grab_book_by_id(connection, operation):
     while True:
         book_id = input(f"What is the ID number of the book you are looking to {operation}: ")
         book_title = search_book_by_id(connection, book_id)
-        correct_book = input("Is this the correct book? y/n\n")
+        correct_book = input("Is this the correct book? (y/n)\n")
         if correct_book.lower().strip() == 'y':
             return book_id, book_title
 
@@ -695,18 +695,18 @@ def add_book_by_id_logic(connection, username):
             connection.commit()
             add_book.close()
             print(f"Here is updated the list of books in {list_name}")
-            fetch_books_in_list(connection, list_name)
+            fetch_books_in_list(connection, username, list_name)
         except pymysql.MySQLError as e:
             print(f"Database error: {e}")
 
 
 def remove_book_by_id_logic(connection, username):  # TODO
     list_name = operate_on_user_book_lists(connection, username, "delete")
-    fetch_books_in_list(connection, list_name)
+    fetch_books_in_list(connection, username, list_name)
     try:
         remove_book = connection.cursor()
         book_id, book_title = grab_book_by_id(connection, "delete")
-        remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id, "@remove_status"))
+        remove_book.callproc("RemoveBookFromUserList", (username, list_name, book_id))
         connection.commit()
         remove_book.close()
 
@@ -752,7 +752,7 @@ def create_user_book_list(connection, user_name, book_list_name):
             result = cursor.fetchone()
 
             # Debug: Log the fetched result
-            print(f"Procedure result: {result}")
+            # print(f"Procedure result: {result}")
 
             if result and 'status_message' in result:
                 return result['status_message']
@@ -774,7 +774,7 @@ def print_list_names_of_user(connection, username):
 
             # If not book lists found
             if not book_lists:
-                print("No book lists found for the user.")
+                print(f"No book lists found for the user '{username}'.")
                 return
 
             while True:
@@ -820,7 +820,7 @@ def print_user_book_lists(connection, username):
                     selected_index = (input("\nEnter the number of the book list you want to view: "))
 
                     if not selected_index.isdigit():
-                        raise ValueError("Invalid input. Please enter a valid number.")
+                        raise ValueError(f"Invalid input '{selected_index}'. Please enter a valid number.")
                         continue
 
                     selected_index = int(selected_index)
@@ -833,10 +833,10 @@ def print_user_book_lists(connection, username):
                     if 1 <= selected_index <= len(book_lists):
                         selected_list = book_lists[selected_index - 1]['list_name']
 
-                        fetch_books_in_list(connection, selected_list)
+                        fetch_books_in_list(connection, username, selected_list)
 
                     else:
-                        print("Invalid selection. Please choose a valid number.")
+                        print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
                 except ValueError as e:
                     print(f"Invalid input: {e}. Please enter a number.")
 
@@ -850,11 +850,11 @@ Helper function to call procedure to retrieve books from book list
 '''
 
 
-def fetch_books_in_list(connection, book_list_name):
+def fetch_books_in_list(connection, username, book_list_name):
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
-            cursor.callproc('fetch_books_in_list', (book_list_name,))
+            cursor.callproc('fetch_books_in_list', (book_list_name, username))
 
             # Fetch all results returned by the procedure
             books = cursor.fetchall()
@@ -888,7 +888,7 @@ def export_user_book_list(connection, username):
 
             # If no book lists found
             if not book_lists:
-                print("No book lists found for the user.")
+                print(f"No book lists found for the user '{username}'.")
                 return
 
             # Display the user's saved book lists
@@ -909,15 +909,15 @@ def export_user_book_list(connection, username):
             selected_list = book_lists[selected_index - 1]['list_name']
 
             # Fetch books in the selected list
-            books = fetch_books_in_list(connection, selected_list)
+            books = fetch_books_in_list(connection, username, selected_list)
 
             # Export the book list to a CSV file
             if books:
                 export_book_list_to_csv(selected_list, books)
-            else:
-                print(f"No books found in the book list '{selected_list}'.")
+            # else:
+            # print(f"No books found in the book list '{selected_list}'.")
         else:
-            print("Invalid selection. Please choose a valid number.")
+            print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
     except ValueError:
         print("Invalid input. Please enter a number.")
 
@@ -951,7 +951,7 @@ def export_book_list_to_csv(book_list_name, books):
         # Write book data to the CSV file
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            #write header row
+            # write header row
             writer.writerow(
                 ["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
@@ -968,9 +968,9 @@ def export_book_list_to_csv(book_list_name, books):
                     book.get("rating", "N/A")
                 ])
 
-        print(f"\nBook list successfully exported to {file_name}")
+        print(f"\nBook list successfully exported to {file_name}!")
     except Exception as e:
-        print(f"An error occured while exporting the book list: {e}")
+        print(f"An error occurred while exporting the book list: {e}")
 
 
 def parse_date(date):
@@ -1018,23 +1018,22 @@ def import_book_list_from_csv(connection, username):
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            if header != ['book_title', 'release_date', 'author_name', 'author_email', 'publisher_name',
-                          'publisher_email', 'description', 'series', 'url', 'format_type', 'genre_1',
+            if header != ['book_title', 'release_date', 'author_name', 'publisher_name',
+                          'author_email', 'publisher_email', 'series', 'url', 'format_type', 'genre_1',
                           'genre_2', 'genre_3']:
                 print(f"\nImport error: Invalid csv! Please use the csv import template provided "
-                      f"in the Virtual Library  README.\n")
+                      f"in the Virtual Library README.\n")
                 return
             for row in reader:
                 book_title = row[0]
                 release_date = row[1]
                 author_name = row[2]
-                author_email = row[3]
-                publisher_name = row[4]
+                publisher_name = row[3]
+                author_email = row[4]
                 publisher_email = row[5]
-                description = row[6]
-                series = row[7]
-                url = row[8]
-                format_type = row[9]
+                series = row[6]
+                url = row[7]
+                format_type = row[8]
 
                 formatted_release_date = parse_date(release_date)
 
@@ -1046,17 +1045,17 @@ def import_book_list_from_csv(connection, username):
                     print(f"'{release_date}' is not a valid date.")
                     return
 
-                if any(field == '' for field in [book_title, formatted_release_date, author_name,
-                                                 author_email, publisher_name, publisher_email]):
+                if any(field == '' for field in [book_title, release_date, author_name, publisher_name]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
                     return
                 else:
                     try:
                         cursor.execute(
-                            f"CALL add_book_from_import('{book_title}', '{description}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
+                            f"CALL add_book_from_import('{book_title}', '{author_name}', '{author_email}', '{publisher_name}', '{publisher_email}', '{formatted_release_date}')")
                     except pymysql.MySQLError as e:
                         print(f"Attempted add book to db: {e}")
+                        return
                     try:
                         cursor.execute(
                             f"CALL add_book_to_user_list('{username}', '{book_list_name}', '{book_title}', '{formatted_release_date}')")
@@ -1076,7 +1075,7 @@ def import_book_list_from_csv(connection, username):
                     except pymysql.MySQLError as e:
                         print(f"Attempted add url: {e}")
 
-                for i in range(10, 13):
+                for i in range(9, 12):
                     genre_name = row[i]
                     if genre_name:
                         try:
@@ -1103,7 +1102,7 @@ Helper function that prints books in tabular format
 
 def print_books_tabular(book_list):
     if not book_list:
-        print("No books in book list to display.")
+        print(f"No books in book list '{book_list}' to display.")
         return
 
     # Define custom header mapping
@@ -1139,12 +1138,12 @@ def print_books_tabular(book_list):
     custom_headers = list(key_to_header.values())
 
     # Debugging output
-    print("Formatted books (final structure):", formatted_books)
-    print("Custom headers:", custom_headers)
+    # print("Formatted books (final structure):", formatted_books)
+    # print("Custom headers:", custom_headers)
 
     try:
         # Print table using tabulate
-        print(tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
+        print(tabulate.tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
 
@@ -1161,7 +1160,7 @@ def operate_on_user_book_lists(connection, username, operation):
             # If not book lists found
             if operation == "add":
                 if not book_lists:
-                    create_new_list = input("No book lists found for the user. Create new list? y/n\n")
+                    create_new_list = input(f"No book lists found for the user '{username}'. Create new list? (y/n)\n")
                     if (create_new_list.strip().lower() == "y"):
                         list_name = input("What is the name of the new list?\n")
                         create_user_book_list(connection, username, list_name)
@@ -1170,7 +1169,7 @@ def operate_on_user_book_lists(connection, username, operation):
                         return 0
             else:
                 if not book_lists:
-                    print("There are no lists to delete from, returning to search menu")
+                    print("There are no lists to delete from, returning to search menu.")
                     return 0
             if operation == "add":
                 while True:
@@ -1201,7 +1200,7 @@ def operate_on_user_book_lists(connection, username, operation):
                             return list_name
 
                         if selected_index == len(book_lists) + 2:
-                            print("Returning to search menu")
+                            print("Returning to search menu.")
                             return
                         # validate selected index
                         if 1 <= selected_index <= len(book_lists):
@@ -1235,7 +1234,7 @@ def operate_on_user_book_lists(connection, username, operation):
                         selected_index = int(selected_index)
 
                         if selected_index == len(book_lists) + 1:
-                            print("Returning to search menu")
+                            print("Returning to search menu.")
                             return
                         # validate selected index
                         if 1 <= selected_index <= len(book_lists):
@@ -1243,7 +1242,7 @@ def operate_on_user_book_lists(connection, username, operation):
                             return selected_list
 
                         else:
-                            print("Invalid selection. Please choose a valid number.")
+                            print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
                     except ValueError as e:
                         print(f"Invalid input: {e}. Please enter a number.")
 
@@ -1329,14 +1328,15 @@ def analysis_logic(connection, username):
 
 def analysis_menu(connection, username):
     user = username
-    print(f"Welcome to the analysis menu")
+    print(f"Welcome to the analysis menu!")
 
-    analysis_input = input(f"\n1. View genres across all {user}'s lists"
+    analysis_input = input(f"Please select from the following options\n"
+                           f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
                            f"\n5. View {user}'s most read author"
-                           "\n\nr. to return to managment menu\n"
+                           f"\nr. Return to managment menu\n"
                            )
     return analysis_input
 
@@ -1348,7 +1348,7 @@ def user_genre_analysis(connection, username):
             result = genre_analysis.fetchall()
 
             if not result:
-                print(f"There are no books in your lists {username}!")
+                print(f"\nThere are no books in your lists, {username}!")
                 return
             print("The genres you read are:\n")
             for key in result:
@@ -1366,6 +1366,9 @@ def user_most_read_genre_analysis(connection, username):
         with connection.cursor() as most_read_genre_analysis:
             most_read_genre_analysis.callproc("MostReadGenre", (username,))
             result = most_read_genre_analysis.fetchall()
+            if not result:
+                print(f"\nThere are no books in your lists, {username}!")
+                return
 
             if len(result) > 1:
                 print(f" {username}'s most read genres are\n")
@@ -1375,6 +1378,7 @@ def user_most_read_genre_analysis(connection, username):
                 genre = result[0]
                 print(f"{username}'s most read genre is:\n")
                 print(f"- {genre.get("genre_name")}")
+            print("\n")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
@@ -1386,9 +1390,6 @@ def user_author_analysis(connection, username):
             author_analysis.callproc("AuthorDiversity", (username,))
             result = author_analysis.fetchall()
 
-            if not result:
-                print(f"There are no books in your lists {username}!")
-                return
             print("The Authors you read are:\n")
             for key in result:
                 author = key.get("unique_authors")
@@ -1405,15 +1406,18 @@ def user_most_read_author_analysis(connection, username):
         with connection.cursor() as most_read_author:
             most_read_author.callproc("TopAuthor", (username,))
             result = most_read_author.fetchall()
-
+            if not result:
+                print(f"There are no books in your lists {username}!")
+                return
             if len(result) > 1:
                 print(f"{username}'s most read genres are\n")
                 for author in result:
                     print(f"- {author.get("author_name")}")
+                print("\n")
             else:
                 author = result[0]
                 print(f"{username}'s most read genre is:\n")
-                print(f"- {author.get("author_name")}")
+                print(f"- {author.get("author_name")}\n\n")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
@@ -1429,7 +1433,7 @@ def user_book_count_analysis(connection, username):
             book = "books"
             if total_books == 1:
                 book = "book"
-            print(f"You have a total of {total_books} {book} in your lists\n\n")
+            print(f"\nYou have a total of {total_books} {book} in your lists\n\n")
 
     except Exception as e:
         print(f"Unexpected error: {e}")

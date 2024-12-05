@@ -1,5 +1,8 @@
 USE virtual_library_db;
 
+SET GLOBAL max_sp_recursion_depth = 64;
+
+
 DROP PROCEDURE IF EXISTS add_book_to_series;
 DELIMITER //
 
@@ -219,7 +222,7 @@ DROP PROCEDURE IF EXISTS add_book_from_import;
 DELIMITER //
 
 -- Adds a book to the book table
-CREATE PROCEDURE add_book_from_import(book_title_p VARCHAR(256), description_p TEXT, author_name_p VARCHAR(128),
+CREATE PROCEDURE add_book_from_import(book_title_p VARCHAR(256), author_name_p VARCHAR(128),
                           author_email_p VARCHAR(64), publisher_name_p VARCHAR(128), publisher_email_p VARCHAR(64),
                           release_date_p DATE)
 
@@ -267,10 +270,8 @@ BEGIN
             AND b.book_title = book_title_p
             AND b.release_date = release_date_p
     ) THEN
-        CALL add_book(book_title_p, description_p,
-                      author_id_v, publisher_id_v, release_date_p);
+        CALL add_book(book_title_p, author_id_v, publisher_id_v, release_date_p);
     END IF ;
-
 
 END //
 DELIMITER ;
@@ -283,16 +284,14 @@ CREATE PROCEDURE add_author(author_name_p VARCHAR(128), author_email_p VARCHAR(6
 BEGIN
 
     DECLARE author_in_db_error VARCHAR(256);
-    DECLARE blank_author VARCHAR(64);
+    DECLARE blank_author_error VARCHAR(64);
 
     SET author_in_db_error = CONCAT('Author: ', author_name_p, ', already exists in author table.');
-    SET blank_author = CONCAT('Author name or email cannot be blank.');
+    SET blank_author_error = CONCAT('Author name cannot be blank.');
 
     IF author_name_p = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = blank_author;
-    ELSEIF author_email_p = '' THEN
-        SET author_email_p = NULL;
+        SET MESSAGE_TEXT = blank_author_error;
     ELSEIF EXISTS (
         SELECT
             1 AS 'author in db'
@@ -302,6 +301,9 @@ BEGIN
     ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = author_in_db_error;
+    ELSEIF author_email_p = '' THEN
+        INSERT INTO author (author_name, email_address)
+        VALUES (author_name_p, NULL);
     ELSE
         INSERT INTO author (author_name, email_address)
         VALUES (author_name_p, author_email_p);
@@ -327,8 +329,6 @@ BEGIN
     IF publisher_name_p = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = blank_publisher_error;
-    ELSEIF publisher_email_p = '' THEN
-        SET publisher_email_p = NULL;
     ELSEIF EXISTS (
         SELECT
             1 AS 'publisher in db'
@@ -338,6 +338,9 @@ BEGIN
     ) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = publisher_in_db_error;
+    ELSEIF publisher_email_p = '' THEN
+        INSERT INTO publisher (publisher_name, email_address)
+        VALUES (publisher_name_p, NULL);
     ELSE
         INSERT INTO publisher (publisher_name, email_address)
         VALUES (publisher_name_p, publisher_email_p);
@@ -604,8 +607,4 @@ BEGIN
 END //
 
 DELIMITER ;
-
-
-SELECT is_user_admin('jack')
-
 
