@@ -430,3 +430,46 @@ BEGIN
 
 END //
 
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS make_user_admin;
+DELIMITER //
+
+CREATE PROCEDURE make_user_admin(username_p VARCHAR(64))
+
+BEGIN
+    DECLARE username_not_in_db_error VARCHAR(64);
+    DECLARE user_already_admin VARCHAR(64);
+    SET username_not_in_db_error = CONCAT('User, ', username_p, ', does not exist');
+    SET user_already_admin = CONCAT('User, ', username_p, ', is already an Admin');
+
+    IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = username_p
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = username_not_in_db_error;
+    ELSEIF EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE 1=1
+            AND u.user_name = username_p
+            AND u.is_admin = TRUE
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = user_already_admin;
+	ELSE
+        UPDATE user u
+            SET u.is_admin = TRUE
+        WHERE 1=1
+            AND u.user_name = username_p
+            AND u.is_admin = FALSE;
+    END IF;
+
+END //
+
+DELIMITER ;
+
