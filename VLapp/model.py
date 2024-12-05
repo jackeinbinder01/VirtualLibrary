@@ -451,6 +451,7 @@ def search_menu(current_list=None):
     return answer
 
 
+
 def manage_menu(username):
     # model.print_user_lists_names(username)
 
