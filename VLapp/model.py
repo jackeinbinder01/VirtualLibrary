@@ -342,6 +342,8 @@ def demote_user_from_admin(connection):
         print(f"User '{username}' was NOT demoted from Admin")
         manage_users_menu(connection)
 
+
+
     print(f"User '{username}' was successfully demoted from Admin!")
 
 
