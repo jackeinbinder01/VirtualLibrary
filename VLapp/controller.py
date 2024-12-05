@@ -11,7 +11,7 @@ def work():
         while True:
             username = model.login_options(connection)
             if username == False:
-                print("the connection was unsuccessful, quitting now")
+                print("Failed to login to the Virtual Library. Closing application.")
                 return
             else:
                 break
