@@ -31,9 +31,14 @@ def connect_to_database():
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            retry = input("\nWould you like to try again? (y/n)\n").strip().lower()
-            if retry != 'y':
-                return None
+            while True:
+                retry = input("Would you like to try again? (y/n)\n").strip().lower()
+                if retry == 'y':
+                    break
+                if retry == 'n':
+                    return None
+                else:
+                    print("invalid entry")
 
 
 def login_options(connection):
@@ -41,7 +46,7 @@ def login_options(connection):
         answer = input("Please login or create a new account:\n"
                        "\n1. Login to an existing account"
                        "\n2. Create a new account"
-                       "\nq. Quit\n")
+                       "\nq. Quit\n\n")
         if answer.strip().lower() == "q":
             return False
         if answer == "1":
@@ -59,7 +64,7 @@ def login_options(connection):
             while True:
                 username = create_user(connection)
                 if username != False:
-                    print("Account created! You have been automatically logged in.")
+                    print("You have been automatically logged in.\n")
                     return username
                 else:
                     retry = input("Please try again. (y/n)\n")
@@ -82,7 +87,7 @@ def create_user(connection, is_admin=False):
 
         # Call AddUser procedure
         creation_conn.callproc('AddUser', (username, password))
-        print("User created successfully.")
+        print("\nUser account created successfully!")
         # Commit changes to ensure the user is saved
         connection.commit()
 
@@ -103,7 +108,7 @@ def create_user(connection, is_admin=False):
             if login_status == "Login Successful":
                 return username
             else:
-                print("Login procedure did not return a valid status after account creation.")
+                print("incorrect usernname or password")
                 return False
     except pymysql.Error as e:
         print(f"Error during account creation or login: {e}")
@@ -128,7 +133,7 @@ def login_user(connection):
         if login_status == "Login Successful":
             return username
         else:
-            print("\nLogin procedure did not return a valid status after account creation.")
+            print("\nFailed to login to the Virtual Library. Closing Application.")
             return False
     except pymysql.Error as e:
         print(f"Error during login: {e}")
@@ -197,18 +202,18 @@ def drop_current_list(connection):
 
 def get_search_param(username):
     print("Please fill out the questions below, no response is acceptable.\n")
-    search_param = [input("What is the name of the genre: "),
-                    input("The book name: "),
-                    input("The last name of the publisher: "),
-                    input("The author name: "),
-                    input("The series name: "),
+    search_param = [input("Genre name: "),
+                    input("Book title: "),
+                    input("Publisher name: "),
+                    input("Author name: "),
+                    input("Series name: "),
                     username
                     ]
     return search_param
 
 
 def main_menu():
-    print("Please select from the following options:\n")
+    print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
@@ -217,7 +222,7 @@ def main_menu():
 
 
 def admin_main_menu():
-    print("Please select from the following options:\n")
+    print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
@@ -226,10 +231,10 @@ def admin_main_menu():
     return answer
 
 
-def manage_users_menu(connection):
+def manage_users_menu(connection, admin_user_name):
     print("\nWelcome to the Manage Users Menu!\n"
           "Please select from the following options:\n")
-    answer = input("\n1. View users in database"
+    answer = input("1. View users in database"
                    "\n2. Create a user account"
                    "\n3. Delete a user account"
                    "\n4. Update a user's information"
@@ -238,22 +243,23 @@ def manage_users_menu(connection):
                    "\nr. Return to main menu\n\n")
     match answer.lower():
         case '1':
-            view_users(connection)
+            admin_view_users(connection, admin_user_name)
         case '2':
-            admin_create_user(connection)
+            admin_create_user(connection, admin_user_name)
         case '3':
-            admin_delete_user(connection)
+            admin_delete_user(connection, admin_user_name)
         case '4':
-            admin_update_user_information(connection)
+            admin_update_user_information(connection, admin_user_name)
         case '5':
-            make_user_admin(connection)
+            make_user_admin(connection, admin_user_name)
         case '6':
-            demote_user_from_admin(connection)
+            demote_user_from_admin(connection, admin_user_name)
         case 'r':
-            admin_main_menu()
+            application_logic(connection, admin_user_name)
 
 
-def view_users(connection):
+
+def admin_view_users(connection, admin_user_name):
     try:
         cursor = connection.cursor()
         cursor.execute("CALL view_users()")
@@ -265,24 +271,26 @@ def view_users(connection):
                 print("View users error: No users found in database.")
             else:
                 clean_data = [
-                    {key: ('True' if key == 'is_admin' and value == 1 else value) for key, value in row.items()}
+                    {key: ('True' if key == 'is_admin' and value == 1
+                           else 'False' if key == 'is_admin' and value == 0
+                           else value) for key, value in row.items()}
                     for row in result_tuples
                 ]
-                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
+                table = tabulate.tabulate(clean_data, headers="keys", tablefmt="fancy_grid")
                 print(f'{table}')
-                manage_users_menu(connection)
+                manage_users_menu(connection, admin_user_name)
     except pymysql.Error as e:
         code, msg = e.args
         print(f"View users error: {code} - {msg}")
 
 
-def admin_create_user(connection):
+def admin_create_user(connection, admin_user_name):
     username = input("Enter the user's username: ").strip()
     password = input("Enter the user's password: ").strip()
 
     if username == '' or password == '':
         print("\nCreate user error: Username and/or password cannot be blank.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -293,12 +301,12 @@ def admin_create_user(connection):
         print(f"\nAdmin create user error: {e}\n")
 
 
-def admin_delete_user(connection):
+def admin_delete_user(connection, admin_user_name):
     username = input("Enter the username of the user to delete: ").strip()
 
     if username == '':
         print("\nDelete User Error: Username cannot be blank.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -309,7 +317,7 @@ def admin_delete_user(connection):
         print(f"\nDelete user error: {e}\n")
 
 
-def admin_update_user_information(connection):
+def admin_update_user_information(connection, admin_user_name):
     print("Please select from the following options:\n")
     answer = input("\n1. Update a user's username"
                    "\n2. Update a user's password"
@@ -323,11 +331,11 @@ def admin_update_user_information(connection):
 
             if old_username == new_username:
                 print("\nUpdate user error: New username must be different than the original username.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
             if new_username == '':
                 print("\nUpdate user error: New username cannot be blank.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
 
             try:
@@ -342,7 +350,7 @@ def admin_update_user_information(connection):
 
             if new_password == '':
                 print("\nUpdate user error: New password cannot be blank.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
 
             try:
@@ -359,15 +367,15 @@ def admin_update_user_information(connection):
 
             if old_username == new_username:
                 print("\nUpdate user error: New username must be different than the original username.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
             if new_username == '':
                 print("\nUpdate user error: New username cannot be blank.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
             if new_password == '':
                 print("\nUpdate user error: New password cannot be blank.")
-                admin_update_user_information(connection)
+                admin_update_user_information(connection, admin_user_name)
                 return
             try:
                 cursor = connection.cursor()
@@ -383,24 +391,24 @@ def admin_update_user_information(connection):
             except pymysql.Error as e:
                 print(f"\nUpdate user error: {e}\n")
         case 'r':
-            manage_users_menu(connection)
+            manage_users_menu(connection, admin_user_name)
         case _:
             print(f"\nInvalid option '{answer}'. Please try again.")
-            admin_update_user_information(connection)
+            admin_update_user_information(connection, admin_user_name)
 
 
-def make_user_admin(connection):
+def make_user_admin(connection, admin_user_name):
     username = input("Enter the user's username: ").strip()
 
     if username == '':
         print("\nMake user admin error: Username cannot be blank.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT made an Admin.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -411,18 +419,18 @@ def make_user_admin(connection):
         print(f"\nMake user admin error: {e}\n")
 
 
-def demote_user_from_admin(connection):
+def demote_user_from_admin(connection, admin_user_name):
     username = input("Enter the user's username: ").strip()
 
     if username == '':
         print("\nDemote user from admin error: Username cannot be blank.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT demoted from Admin.")
-        manage_users_menu(connection)
+        manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -434,15 +442,14 @@ def demote_user_from_admin(connection):
 
 
 def search_menu(current_list=None):
-    print("\nWelcome to the search menu!\n"
-          "Please select from the following options:\n")
-
+    print("\nWelcome to the Search Menu!\n"
+          "Please select from the following options:")
     answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
                    "\n2. Add a specific book by book id to a list"
                    "\n3. Remove a specific book by book id"
                    "\n4. Add/update a rating on a book by book id"
                    "\n5. Add a URL to access a copy of a book"
-                   "\n\nr. Return to the main menu\n")
+                   "\nr. Return to the main menu\n\n")
     return answer
 
 
@@ -453,13 +460,13 @@ def manage_menu(username):
           "Please select from the following options:\n")
     answer = input(
         "1. Create a new book list\n"
-        "2. View my book lists\n"
+        "2. View my saved book lists\n"
         "3. Delete an existing book list\n"
         "4. Add a book to a book list\n"
         "5. Remove a book from a book list\n"
         "6. Export a book list to csv file\n"
         "7. Import a book list from a csv file\n"
-        "r. Return to main menu\n")
+        "r. Return to main menu\n\n")
     return answer
 
 
@@ -505,7 +512,7 @@ def application_logic(connection, username):
             analysis_logic(connection, username)
 
         elif main_menu_answer.strip() == "4" and user_is_admin:
-            manage_users_menu(connection)
+            manage_users_menu(connection, username)
 
 
 
@@ -789,7 +796,7 @@ def print_list_names_of_user(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s Saved Book Lists: ")
+                print(f"\n{username}'s saved book lists:\n")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
                 return
@@ -818,7 +825,7 @@ def print_user_book_lists(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s Saved Book Lists: ")
+                print(f"\n{username}'s saved book lists:\n")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
 
@@ -902,7 +909,7 @@ def export_user_book_list(connection, username):
                 return
 
             # Display the user's saved book lists
-            print(f"\n{username}'s Saved Book Lists:")
+            print(f"\n{username}'s saved book lists:\n")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
@@ -1187,7 +1194,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "add":
                 while True:
                     # Display the user's saved book lists
-                    print(f"{username}'s Saved Book Lists: ")
+                    print(f"\n{username}'s saved book lists:\n")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1228,7 +1235,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "delete":
                 while True:
                     # Display the user's saved book lists
-                    print(f"{username}'s Saved Book Lists: ")
+                    print(f"\n{username}'s saved book lists:\n")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1281,7 +1288,7 @@ def delete_book_list(connection, username):
                 return
 
             # Display book lists with corresponding numbers
-            print(f"{username}'s Saved Book Lists:")
+            print(f"\n{username}'s saved book lists:\n")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
@@ -1342,13 +1349,13 @@ def analysis_logic(connection, username):
 def analysis_menu(connection, username):
     user = username
     print("\nWelcome to the User Analytics Menu!\n"
-          "Please select from the following options:\n")
+          "Please select from the following options:")
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
                            f"\n5. View {user}'s most read author"
-                           f"\nr. Return to managment menu\n"
+                           f"\nr. Return to managment menu\n\n"
                            )
     return analysis_input
 
