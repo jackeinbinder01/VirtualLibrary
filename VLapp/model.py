@@ -266,8 +266,12 @@ def admin_delete_user(connection):
         manage_users_menu(connection)
         return
 
-    print(f"\nDelete account for user: '{username}'\n")
-
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"CALL delete_user('{username}')")
+        print(f"\nSuccessfully deleted '{username}'\n")
+    except pymysql.Error as e:
+        print(f"\n Delete user error: {e}")
 
 def admin_update_user_information(connection):
     answer = input(f"\nPlease select from the following options:\n"
@@ -400,7 +404,7 @@ def application_logic(connection, username):
             analysis_logic(connection, username)
 
         elif main_menu_answer.strip() == "4" and user_is_admin:
-            manage_users_menu(connection, username)
+            manage_users_menu(connection)
 
 
 
