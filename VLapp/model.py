@@ -440,9 +440,8 @@ def demote_user_from_admin(connection):
 
 
 def search_menu(current_list=None):
-    print("\nWelcome to the search menu!\n"
-          "Please select from the following options:\n")
-
+    print("\nWelcome to the Search Menu!\n"
+          "Please select from the following options:")
     answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
                    "\n2. Add a specific book by book id to a list"
                    "\n3. Remove a specific book by book id"
