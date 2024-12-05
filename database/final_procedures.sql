@@ -398,7 +398,7 @@ DELIMITER ;
 SELECT @@sql_mode;
 
 -- Test case:
-CALL fetch_books_in_list('test_list');
+CALL fetch_books_in_list('test_list', 's');
 
 /*
 Procedure that creates a new user book list
@@ -479,6 +479,7 @@ CALL delete_book_list('bob', 'test_list6');
 -- Test case:
 CALL CreateUserBookList('bob', 'test_list3');
 SELECT @status_message;
+
 
 
 
