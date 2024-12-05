@@ -1046,8 +1046,7 @@ def import_book_list_from_csv(connection, username):
                     print(f"'{release_date}' is not a valid date.")
                     return
 
-                if any(field == '' for field in [book_title, formatted_release_date, author_name,
-                                                 author_email, publisher_name, publisher_email]):
+                if any(field == '' for field in [book_title, formatted_release_date, author_name, publisher_name]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
                     return
