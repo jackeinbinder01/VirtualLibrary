@@ -31,7 +31,7 @@ def connect_to_database():
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
+            retry = input("\nWould you like to try again? (y/n)\n").strip().lower()
             if retry != 'y':
                 return None
 
@@ -51,7 +51,7 @@ def login_options(connection):
                     print(f"\nWelcome back, {username}!\n")
                     return username
                 else:
-                    retry = input("Try again (y/n)")
+                    retry = input("Please try again. (y/n)\n")
                     if retry.lower() == 'n':
                         return False
 
@@ -62,7 +62,7 @@ def login_options(connection):
                     print("Account created! You have been automatically logged in.")
                     return username
                 else:
-                    retry = input("Try again (y/n).")
+                    retry = input("Please try again. (y/n)\n")
                     if retry.strip().lower() == 'n':
                         return False
         else:
@@ -397,7 +397,7 @@ def make_user_admin(connection):
         manage_users_menu(connection)
         return
 
-    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
+    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT made an Admin.")
         manage_users_menu(connection)
@@ -419,7 +419,7 @@ def demote_user_from_admin(connection):
         manage_users_menu(connection)
         return
 
-    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
+    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT demoted from Admin.")
         manage_users_menu(connection)
@@ -549,7 +549,7 @@ def search_books(connection, username):
 
         # Refine search loop
         while True:
-            user_continue = input("Would you like to further refine the list? (y/n): ").strip().lower()
+            user_continue = input("Would you like to further refine the list? (y/n)\n").strip().lower()
             if user_continue == "y":
                 search_param = get_search_param(username)
                 filter_current_list(search_param, connection)
@@ -1287,7 +1287,7 @@ def delete_book_list(connection, username):
             if 1 <= selected_index <= len(book_lists):
                 selected_list_name = book_lists[selected_index - 1]['list_name']
                 confirm = input(
-                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n): ").strip().lower()
+                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n)\n").strip().lower()
 
                 if confirm == 'y':
                     # Call the DeleteBookList procedure
