@@ -187,7 +187,7 @@ def print_books_tabular(book_list):
             key_to_header["publisher_name"]: book.get("publisher_name", "N/A"),
             key_to_header["series_name"]: book.get("series_name", "N/A"),
             key_to_header["rating"]: book.get("rating", "N/A"),
-            key_to_header["comments"]: book.get("comments", "N/A"),
+            key_to_header["comments"]: book.get("comments", "N/A")
         }
         for book in book_list
     ]
