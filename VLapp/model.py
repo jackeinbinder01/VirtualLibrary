@@ -480,7 +480,6 @@ def application_logic(connection, username):
         connection.commit()
 
         user_is_admin = is_user_admin(connection, username)
-
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:
