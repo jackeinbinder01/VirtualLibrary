@@ -1121,8 +1121,8 @@ def print_books_tabular(book_list):
     custom_headers = list(key_to_header.values())
 
     # Debugging output
-    print("Formatted books (final structure):", formatted_books)
-    print("Custom headers:", custom_headers)
+    # print("Formatted books (final structure):", formatted_books)
+    # print("Custom headers:", custom_headers)
 
     try:
         # Print table using tabulate
