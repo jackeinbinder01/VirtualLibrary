@@ -27,11 +27,11 @@ def connect_to_database():
                 autocommit=True
             )
             print("\nConnection Successful!\n"
-                  "Welcome to the Virtual Library!\n")
+                  "\nWelcome to the Virtual Library!")
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
-            retry = input("\nWould you like to try again? (y/n):\n").strip().lower()
+            retry = input("\nWould you like to try again? (y/n)\n").strip().lower()
             if retry != 'y':
                 return None
 
@@ -48,10 +48,10 @@ def login_options(connection):
             while True:
                 username = login_user(connection)
                 if username != False:
-                    print(f"\nWelcome back, {username}!\n")
+                    print(f"\nWelcome back, {username}!")
                     return username
                 else:
-                    retry = input("Try again (y/n)")
+                    retry = input("Please try again. (y/n)\n")
                     if retry.lower() == 'n':
                         return False
 
@@ -62,7 +62,7 @@ def login_options(connection):
                     print("Account created! You have been automatically logged in.")
                     return username
                 else:
-                    retry = input("Try again (y/n).")
+                    retry = input("Please try again. (y/n)\n")
                     if retry.strip().lower() == 'n':
                         return False
         else:
@@ -128,7 +128,7 @@ def login_user(connection):
         if login_status == "Login Successful":
             return username
         else:
-            print("Login procedure did not return a valid status after account creation.")
+            print("\nLogin procedure did not return a valid status after account creation.")
             return False
     except pymysql.Error as e:
         print(f"Error during login: {e}")
@@ -208,8 +208,8 @@ def get_search_param(username):
 
 
 def main_menu():
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
                    "\nq. Quit\n\n")
@@ -217,8 +217,8 @@ def main_menu():
 
 
 def admin_main_menu():
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
                    "\n4. Manage users"
@@ -227,9 +227,9 @@ def admin_main_menu():
 
 
 def manage_users_menu(connection):
-    print("\nWelcome to the Manage Users Menu!")
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. View users in database"
+    print("\nWelcome to the Manage Users Menu!\n"
+          "Please select from the following options:\n")
+    answer = input("\n1. View users in database"
                    "\n2. Create a user account"
                    "\n3. Delete a user account"
                    "\n4. Update a user's information"
@@ -310,8 +310,8 @@ def admin_delete_user(connection):
 
 
 def admin_update_user_information(connection):
-    answer = input(f"\nPlease select from the following options:\n"
-                   "\n1. Update a user's username"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Update a user's username"
                    "\n2. Update a user's password"
                    "\n3. Update a user's username and password"
                    "\nr. Return to the Manage Users Menu\n\n")
@@ -397,7 +397,7 @@ def make_user_admin(connection):
         manage_users_menu(connection)
         return
 
-    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n): ")
+    confirmation = input(f"Are you sure you want to make '{username}' an Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT made an Admin.")
         manage_users_menu(connection)
@@ -419,7 +419,7 @@ def demote_user_from_admin(connection):
         manage_users_menu(connection)
         return
 
-    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n): ")
+    confirmation = input(f"Are you sure you want to demote '{username}' from Admin? (y/n)\n ")
     if confirmation.lower() != 'y':
         print(f"\nUser '{username}' was NOT demoted from Admin.")
         manage_users_menu(connection)
@@ -434,9 +434,9 @@ def demote_user_from_admin(connection):
 
 
 def search_menu(current_list=None):
-    print("\nWelcome to the search menu!")
+    print("\nWelcome to the search menu!\n"
+          "Please select from the following options:\n")
 
-    print("Please select from the following options:")
     answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
                    "\n2. Add a specific book by book id to a list"
                    "\n3. Remove a specific book by book id"
@@ -447,14 +447,18 @@ def search_menu(current_list=None):
 
 
 def manage_menu(username):
-    print("Welcome to the management menu!")
     # model.print_user_lists_names(username)
+
+    print("\nWelcome to the Management Menu!\n"
+          "Please select from the following options:\n")
     answer = input(
         "1. Create a new book list\n"
         "2. View my book lists\n"
         "3. Delete an existing book list\n"
-        "4. Export a book list to csv file\n"
-        "5. Import a book list from a csv file\n"
+        "4. Add a book to a book list\n"
+        "5. Remove a book from a book list\n"
+        "6. Export a book list to csv file\n"
+        "7. Import a book list from a csv file\n"
         "r. Return to main menu\n")
     return answer
 
@@ -547,7 +551,7 @@ def search_books(connection, username):
 
         # Refine search loop
         while True:
-            user_continue = input("Would you like to further refine the list? (y/n): ").strip().lower()
+            user_continue = input("Would you like to further refine the list? (y/n)\n").strip().lower()
             if user_continue == "y":
                 search_param = get_search_param(username)
                 filter_current_list(search_param, connection)
@@ -587,9 +591,15 @@ def manage_lists_logic(connection, username):
             delete_book_list(connection, username)
 
         elif list_menu_answer.strip() == '4':
-            export_user_book_list(connection, username)
+            add_book_by_id_logic(connection, username)
 
         elif list_menu_answer.strip() == '5':
+            remove_book_by_id_logic(connection, username)
+
+        elif list_menu_answer.strip() == '6':
+            export_user_book_list(connection, username)
+
+        elif list_menu_answer.strip() == '7':
             import_book_list_from_csv(connection, username)
 
         # quit to main menu
@@ -817,7 +827,7 @@ def print_user_book_lists(connection, username):
 
                 # Prompt user to select a book list
                 try:
-                    selected_index = (input("\nEnter the number of the book list you want to view: "))
+                    selected_index = (input("\nEnter the number of the book list you want: "))
 
                     if not selected_index.isdigit():
                         raise ValueError(f"Invalid input '{selected_index}'. Please enter a valid number.")
@@ -951,7 +961,7 @@ def export_book_list_to_csv(book_list_name, books):
         # Write book data to the CSV file
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
-            # write header row
+            #write header row
             writer.writerow(
                 ["Book ID", "Book Title", "Release Date", "Genres", "Authors", "Publisher", "Series", "Rating"])
 
@@ -1048,6 +1058,9 @@ def import_book_list_from_csv(connection, username):
                 if any(field == '' for field in [book_title, release_date, author_name, publisher_name]):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
+                    return
+                if url != '' and format_type == '':
+                    print(f"\nImport Error: the 'format_type' field is required when a URL is imported.\n")
                     return
                 else:
                     try:
@@ -1279,7 +1292,7 @@ def delete_book_list(connection, username):
             if 1 <= selected_index <= len(book_lists):
                 selected_list_name = book_lists[selected_index - 1]['list_name']
                 confirm = input(
-                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n): ").strip().lower()
+                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n)\n").strip().lower()
 
                 if confirm == 'y':
                     # Call the DeleteBookList procedure
@@ -1328,10 +1341,9 @@ def analysis_logic(connection, username):
 
 def analysis_menu(connection, username):
     user = username
-    print(f"Welcome to the analysis menu!")
-
-    analysis_input = input(f"Please select from the following options\n"
-                           f"\n1. View genres across all {user}'s lists"
+    print("\nWelcome to the User Analytics Menu!\n"
+          "Please select from the following options:\n")
+    analysis_input = input(f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"

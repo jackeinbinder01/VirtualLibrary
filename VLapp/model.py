@@ -27,7 +27,7 @@ def connect_to_database():
                 autocommit=True
             )
             print("\nConnection Successful!\n"
-                  "Welcome to the Virtual Library!\n")
+                  "\nWelcome to the Virtual Library!")
             return connection
         except pymysql.Error as e:
             print(f"Cannot connect to the database: {e}")
@@ -48,7 +48,7 @@ def login_options(connection):
             while True:
                 username = login_user(connection)
                 if username != False:
-                    print(f"\nWelcome back, {username}!\n")
+                    print(f"\nWelcome back, {username}!")
                     return username
                 else:
                     retry = input("Please try again. (y/n)\n")
@@ -128,7 +128,7 @@ def login_user(connection):
         if login_status == "Login Successful":
             return username
         else:
-            print("Login procedure did not return a valid status after account creation.")
+            print("\nLogin procedure did not return a valid status after account creation.")
             return False
     except pymysql.Error as e:
         print(f"Error during login: {e}")
@@ -208,8 +208,8 @@ def get_search_param(username):
 
 
 def main_menu():
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
                    "\nq. Quit\n\n")
@@ -217,8 +217,8 @@ def main_menu():
 
 
 def admin_main_menu():
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. Search the Virtual Library for books"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Search the Virtual Library for books"
                    "\n2. Manage my saved book lists"
                    "\n3. View user analytics"
                    "\n4. Manage users"
@@ -227,9 +227,9 @@ def admin_main_menu():
 
 
 def manage_users_menu(connection):
-    print("\nWelcome to the Manage Users Menu!")
-    answer = input(f"Please select from the following options:\n"
-                   "\n1. View users in database"
+    print("\nWelcome to the Manage Users Menu!\n"
+          "Please select from the following options:\n")
+    answer = input("\n1. View users in database"
                    "\n2. Create a user account"
                    "\n3. Delete a user account"
                    "\n4. Update a user's information"
@@ -310,8 +310,8 @@ def admin_delete_user(connection):
 
 
 def admin_update_user_information(connection):
-    answer = input(f"\nPlease select from the following options:\n"
-                   "\n1. Update a user's username"
+    print("Please select from the following options:\n")
+    answer = input("\n1. Update a user's username"
                    "\n2. Update a user's password"
                    "\n3. Update a user's username and password"
                    "\nr. Return to the Manage Users Menu\n\n")
@@ -434,9 +434,9 @@ def demote_user_from_admin(connection):
 
 
 def search_menu(current_list=None):
-    print("\nWelcome to the search menu!")
+    print("\nWelcome to the search menu!\n"
+          "Please select from the following options:\n")
 
-    print("Please select from the following options:")
     answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
                    "\n2. Add a specific book by book id to a list"
                    "\n3. Remove a specific book by book id"
@@ -447,8 +447,10 @@ def search_menu(current_list=None):
 
 
 def manage_menu(username):
-    print("Welcome to the management menu!")
     # model.print_user_lists_names(username)
+
+    print("\nWelcome to the Management Menu!\n"
+          "Please select from the following options:\n")
     answer = input(
         "1. Create a new book list\n"
         "2. View my book lists\n"
@@ -858,7 +860,7 @@ Helper function to call procedure to retrieve books from book list
 '''
 
 
-def fetch_books_in_list(connection, username,  book_list_name):
+def fetch_books_in_list(connection, username, book_list_name):
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
@@ -923,7 +925,7 @@ def export_user_book_list(connection, username):
             if books:
                 export_book_list_to_csv(selected_list, books)
             # else:
-                # print(f"No books found in the book list '{selected_list}'.")
+            # print(f"No books found in the book list '{selected_list}'.")
         else:
             print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
     except ValueError:
@@ -1026,7 +1028,7 @@ def import_book_list_from_csv(connection, username):
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
             header = next(reader)
-            if header != ['book_title', 'release_date', 'author_name',  'publisher_name',
+            if header != ['book_title', 'release_date', 'author_name', 'publisher_name',
                           'author_email', 'publisher_email', 'series', 'url', 'format_type', 'genre_1',
                           'genre_2', 'genre_3']:
                 print(f"\nImport error: Invalid csv! Please use the csv import template provided "
@@ -1339,10 +1341,9 @@ def analysis_logic(connection, username):
 
 def analysis_menu(connection, username):
     user = username
-    print(f"Welcome to the analysis menu!")
-
-    analysis_input = input(f"Please select from the following options\n"
-                           f"\n1. View genres across all {user}'s lists"
+    print("\nWelcome to the User Analytics Menu!\n"
+          "Please select from the following options:\n")
+    analysis_input = input(f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
                            f"\n4. View authors across all {user}'s lists"
@@ -1380,7 +1381,7 @@ def user_most_read_genre_analysis(connection, username):
             if not result:
                 print(f"\nThere are no books in your lists, {username}!")
                 return
-            
+
             if len(result) > 1:
                 print(f" {username}'s most read genres are\n")
                 for genre in result:
@@ -1439,7 +1440,7 @@ def user_book_count_analysis(connection, username):
         with connection.cursor() as book_num_analysis:
             book_num_analysis.callproc("CountUserBooks", (username,))
             result = book_num_analysis.fetchall()
-            
+
             total_books = result[0].get("total_unique_books")
             book = "books"
             if total_books == 1:
