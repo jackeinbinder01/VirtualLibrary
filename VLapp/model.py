@@ -1299,7 +1299,7 @@ def delete_book_list(connection, username):
             if 1 <= selected_index <= len(book_lists):
                 selected_list_name = book_lists[selected_index - 1]['list_name']
                 confirm = input(
-                    f"Are you sure you want to delete the book list '{selected_list_name}'? (y/n)\n").strip().lower()
+                    f"\nAre you sure you want to delete the book list '{selected_list_name}'? (y/n)\n").strip().lower()
 
                 if confirm == 'y':
                     # Call the DeleteBookList procedure
@@ -1307,20 +1307,20 @@ def delete_book_list(connection, username):
                         cursor.callproc('delete_book_list', (username, selected_list_name))
                         result = cursor.fetchall()
                         if result:
-                            print(result[0]['status_message'])
+                            print(f"\n{result[0]['status_message']}")
                         else:
-                            print("Error: No status message returned.")
+                            print("\nError: No status message returned.")
                 else:
                     print("Deletion canceled.")
             else:
-                print("Invalid selection. Please choose a valid number.")
+                print("\nInvalid selection. Please choose a valid number.")
 
     except ValueError:
-        print("Invalid input. Please enter a number.")
+        print("\nInvalid input. Please enter a number.")
     except pymysql.MySQLError as e:
-        print(f"Database error: {e}")
+        print(f"\nDatabase error: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"\nUnexpected error: {e}")
 
 
 def analysis_logic(connection, username):
