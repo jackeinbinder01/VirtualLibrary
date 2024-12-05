@@ -825,7 +825,7 @@ def print_user_book_lists(connection, username):
 
                 # Prompt user to select a book list
                 try:
-                    selected_index = (input("\nEnter the number of the book list you want to view: "))
+                    selected_index = (input("\nEnter the number of the book list you want: "))
 
                     if not selected_index.isdigit():
                         raise ValueError(f"Invalid input '{selected_index}'. Please enter a valid number.")
