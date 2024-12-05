@@ -1031,3 +1031,5 @@ def delete_book_list(connection, username):
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
+
+
