@@ -1139,7 +1139,7 @@ def user_genre_analysis(connection, username):
                 print(f"- {genre}")
             print("\n")
             return
-            # print_analysis_tabular(result, "genres")
+        
     except Exception as e:
         print(f"Unexpected error: {e}")
         
@@ -1155,7 +1155,7 @@ def user_most_read_genre_analysis(connection, username):
                     print(f"- {genre.get("genre_name")}")
             else:
                 genre = result[0]
-                print(f" {username}'s most read genre is:\n")
+                print(f"{username}'s most read genre is:\n")
                 print(f"- {genre.get("genre_name")}")
             return
     except Exception as e:
@@ -1187,12 +1187,12 @@ def user_most_read_author_analysis(connection, username):
             result = most_read_author.fetchall()
             
             if len(result) > 1:
-                print(f" {username}'s most read genres are\n")
+                print(f"{username}'s most read genres are\n")
                 for author in result:
                     print(f"- {author.get("author_name")}")
             else:
                 author = result[0]
-                print(f" {username}'s most read genre is:\n")
+                print(f"{username}'s most read genre is:\n")
                 print(f"- {author.get("author_name")}")
             return
     except Exception as e:
@@ -1216,22 +1216,3 @@ def user_book_count_analysis(connection, username):
 def user_format_analysis(connection, username):
     pass
     
-# def print_analysis_tabular(data, analysis_type):
-#     key_to_header = {
-#         f"{analysis_type}": f"{analysis_type.capitalize()}",
-#     }
-
-#     # Reformat the data to match the custom header names
-#     formatted_info = [
-#         {
-#             key_to_header[f"{analysis_type}"]: data_type.get(f"{analysis_type}", "N/A"),
-#         }
-#         for data_type in data
-#     ]
-
-#     # Extract the headers in the desired order
-#     custom_headers = list(key_to_header.values())
-
-#     # Debugging output
-#     print("Formatted books (final structure):", formatted_info)
-#     print("Custom headers:", custom_headers)
