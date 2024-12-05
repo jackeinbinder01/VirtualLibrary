@@ -214,7 +214,7 @@ def search_menu(current_list=None):
     answer = input("1. if you would like to search for books by genre, publisher,"
                 " author name, book name, or series name\n2. to add a specific book by book id"
                 " to a list\n3. to remove a specific book by book id\n4. add/update a rating on a"
-                " book by book id\nq to return to main menu\n")
+                " book by book id\nr to return to main menu\n")
     return answer
 
 
@@ -252,7 +252,7 @@ def search_logic(connection, username):
         search_menu_answer = search_menu(username)
 
         # Quit to main menu
-        if search_menu_answer.strip().lower() == 'q':
+        if search_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
             break
 
