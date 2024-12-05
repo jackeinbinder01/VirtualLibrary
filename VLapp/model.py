@@ -142,19 +142,15 @@ Helper funtion to create new user book list
 def create_user_book_list(connection, user_name, book_list_name):
     try:
         with connection.cursor() as cursor:
-            print(f"Calling CreateUserBookList with username={user_name}, book_list_name={book_list_name}")
             cursor.callproc('CreateUserBookList', (user_name, book_list_name))
 
             cursor.execute('SELECT @status_message')
             result = cursor.fetchone()
 
-            # Debug: Log the fetched result
-            # print(f"Procedure result: {result}")
-
             if result and 'status_message' in result:
                 return result['status_message\n']
-            # else:
-            #     return "No status message returned."
+            else:
+                return "Book list created successfully."
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         return None

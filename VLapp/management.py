@@ -25,10 +25,10 @@ def manage_lists_logic(connection, username):
             status_message = model.create_user_book_list(connection, username, book_list_name)
 
             # Display the status message returned by the procedure
-            if status_message:
-                print(f"Result: {status_message}")
+            if status_message.startswith("Database error"):
+                print("An error occured while creating the book list.")
             else:
-                print("An error occurred while creating the book list.")
+                print(f"Result: {status_message}")
 
         elif list_menu_answer.strip() == '2':
             print_user_book_lists(connection, username)
