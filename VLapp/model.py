@@ -292,11 +292,11 @@ def admin_update_user_information(connection):
             new_username = input("Enter the user's new username: ").strip()
 
             if old_username == new_username:
-                print("\nUpdate User Error: New username must be different than the original username.")
+                print("\nUpdate user error: New username must be different than the original username.")
                 admin_update_user_information(connection)
                 return
             if new_username == '':
-                print("\nUpdate User Error: New username cannot be blank.")
+                print("\nUpdate user error: New username cannot be blank.")
                 admin_update_user_information(connection)
                 return
 
@@ -311,7 +311,7 @@ def admin_update_user_information(connection):
             new_password = input("Enter the user's new password: ").strip()
 
             if new_password == '':
-                print("\nUpdate User Error: New password cannot be blank.")
+                print("\nUpdate user error: New password cannot be blank.")
                 admin_update_user_information(connection)
         case '3':
             old_username = input("Enter the user's old username: ").strip()
