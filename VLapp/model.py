@@ -51,7 +51,7 @@ def login_options(connection):
                     print(f"\nWelcome back, {username}!\n")
                     return username
                 else:
-                    retry = input("Try again y/n")
+                    retry = input("Try again (y/n)")
                     if retry.lower() == 'n':
                         return False
 
@@ -62,7 +62,7 @@ def login_options(connection):
                     print("Account created! You have been automatically logged in")
                     return username
                 else:
-                    retry = input("Try again y/n")
+                    retry = input("Try again (y/n)")
                     if retry.strip().lower() == 'n':
                         return False
         else:
@@ -621,7 +621,7 @@ def grab_book_by_id(connection, operation):
     while True:
         book_id = input(f"What is the ID number of the book you are looking to {operation}: ")
         book_title = search_book_by_id(connection, book_id)
-        correct_book = input("Is this the correct book? y/n\n")
+        correct_book = input("Is this the correct book? (y/n)\n")
         if correct_book.lower().strip() == 'y':
             return book_id, book_title
 
@@ -1161,7 +1161,7 @@ def operate_on_user_book_lists(connection, username, operation):
             # If not book lists found
             if operation == "add":
                 if not book_lists:
-                    create_new_list = input("No book lists found for the user. Create new list? y/n\n")
+                    create_new_list = input("No book lists found for the user. Create new list? (y/n)\n")
                     if (create_new_list.strip().lower() == "y"):
                         list_name = input("What is the name of the new list?\n")
                         create_user_book_list(connection, username, list_name)
