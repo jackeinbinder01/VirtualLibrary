@@ -103,7 +103,7 @@ def create_user(connection, is_admin=False):
             if login_status == "Login Successful":
                 return username
             else:
-                print("Login procedure did not return a valid status after account creation.")
+                print("incorrect usernname or password")
                 return False
     except pymysql.Error as e:
         print(f"Error during account creation or login: {e}")
