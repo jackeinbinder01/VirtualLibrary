@@ -201,7 +201,8 @@ def get_search_param(username):
                     input("The book name: "),
                     input("The last name of the publisher: "),
                     input("The author name: "),
-                    input("The series name: ")
+                    input("The series name: "),
+                    username
                     ]
     return search_param
 
