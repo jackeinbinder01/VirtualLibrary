@@ -1057,6 +1057,9 @@ def import_book_list_from_csv(connection, username):
                     print("\nImport Error: csv template is missing some required fields. Please populate all required "
                           "fields as detailed in the Virtual Library README.\n")
                     return
+                if url != '' and format_type == '':
+                    print(f"\nImport Error: the 'format_type' field is required when a URL is imported.\n")
+                    return
                 else:
                     try:
                         cursor.execute(
