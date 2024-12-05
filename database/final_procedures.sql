@@ -361,11 +361,7 @@ BEGIN
 END $$
 DELIMITER ;
 
-/*
-Test cases:
-*/
-CALL return_list_name_of_user('bob');
-DELIMITER $$
+
 DELIMITER $$
 
 CREATE PROCEDURE fetch_books_in_list(
@@ -406,7 +402,6 @@ DELIMITER ;
 SELECT @@sql_mode;
 
 -- Test case:
-CALL fetch_books_in_list('test_list');
 
 /*
 Procedure that creates a new user book list
@@ -481,13 +476,6 @@ END $$
 
 DELIMITER ;
 
--- Test case:
-CALL delete_book_list('bob', 'test_list6');
-
--- Test case:
-CALL CreateUserBookList('bob', 'test_list3');
-SELECT @status_message;
-
 
 DELIMITER $$
 
@@ -505,7 +493,6 @@ BEGIN
 END $$
 
 DELIMITER ;
-CALL FetchUserGenres('s');
 
 DELIMITER $$
 
@@ -521,7 +508,6 @@ END $$
 
 DELIMITER ;
 
-CALL CountUserBooks('s');
 
 
 DELIMITER $$
@@ -553,8 +539,6 @@ END $$
 DELIMITER ;
 
 
-CALL MostReadGenre('s');
-
 DELIMITER $$
 CREATE PROCEDURE AuthorDiversity(IN user_name_p VARCHAR(64))
 BEGIN
@@ -566,7 +550,6 @@ BEGIN
 END $$
 DELIMITER ;
 
-CALL AuthorDiversity('s');
 
 DELIMITER $$
 CREATE PROCEDURE TopAuthor(IN user_name_p VARCHAR(64))
@@ -582,6 +565,5 @@ BEGIN
 END $$
 DELIMITER ;
 
-CALL TopAuthor('s');
 
 
