@@ -186,7 +186,7 @@ def drop_current_list(connection):
         drop_list = connection.cursor()
         drop_list.callproc("DropFilteredList")
         drop_list.close()
-        print("the list has been cleared")
+        print("The list has been cleared")
 
     except Exception as e:
         # Catch any unexpected exceptions
@@ -196,8 +196,8 @@ def drop_current_list(connection):
 def get_search_param(username):
     print("please fill out the questions below, no response is acceptable")
     search_param = [input("What is the name of the genre: "),
-                    input("the book name: "),
-                    input("the last name of the publisher: "),
+                    input("The book name: "),
+                    input("The last name of the publisher: "),
                     input("The author name: "),
                     input("The series name: ")
                     ]
@@ -216,12 +216,12 @@ def search_menu(current_list=None):
     print("\nWelcome to the search menu!")
 
     print("Please select from the following options:")
-    answer = input("\n1. search for books by genre, publisher, author name, book name, or series name"
-                   "\n2. add a specific book by book id to a list"
-                   "\n3. remove a specific book by book id"
-                   "\n4. add/update a rating on a book by book id"
-                   "\n5. add a URL to access a copy of a book"
-                   "\nq. return to the main menu\n")
+    answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
+                   "\n2. Add a specific book by book id to a list"
+                   "\n3. Remove a specific book by book id"
+                   "\n4. Add/update a rating on a book by book id"
+                   "\n5. Add a URL to access a copy of a book"
+                   "\n\nr. Return to the main menu\n")
     return answer
 
 
@@ -229,7 +229,10 @@ def manage_menu(username):
     print("welcome to the management menu!")
     # model.print_user_lists_names(username)
     answer = input(
-        "1. create a new book list\n2. view you saved book lists\n3. delete a book list\n4. export book list to csv file\n5. import a book list from a csv file\nr. return to main menu\n")
+        "1. Create a new book list\n2. View you saved book lists\n"
+        "3. Delete a book list\n4. Export book list to csv file\n"
+        "5. Import a book list from a csv file\n6. View the analysis menu\n"
+        "\nr. return to main menu\n")
     return answer
 
 
@@ -261,7 +264,7 @@ def search_logic(connection, username):
         search_menu_answer = search_menu(username)
 
         # Quit to main menu
-        if search_menu_answer.strip().lower() == 'q':
+        if search_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
             break
 
@@ -279,6 +282,9 @@ def search_logic(connection, username):
 
         elif search_menu_answer.strip() == '5':  # Add a URL to the database
             add_url_to_db(connection)
+            
+        elif search_menu_answer.strip() == '6': # go to analysis menu
+            analysis_logic(connection, username)
         else:
             print("Invalid input. Please try again.")
 
@@ -334,7 +340,8 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '5':
             import_book_list_from_csv(connection, username)
-
+        elif list_menu_answer.strip() == '6':
+            analysis_logic(connection, username)
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
@@ -1030,6 +1037,37 @@ def delete_book_list(connection, username):
     except Exception as e:
         print(f"Unexpected error: {e}")
         
+def analysis_logic(connection, username):
+    leave = True
+    while leave:
+            # if user is an admin the check will be here and it will allow
+            # a user to see all usernames and pass in one as an arguement
+            # to the other functions!
+            analysis_input = analysis_menu(connection, username).strip().lower()
+            
+            if analysis_input == '1':
+                user_genre_analysis(connection, username)
+            elif analysis_input == '2':
+                user_date_analysis(connection, username)
+            elif analysis_input == "3":
+                user_book_count_analysis(connection, username)
+            elif analysis_input == 'r':
+                return
+            
+
+def analysis_menu(connection, username):
+    user = username
+    print(f"Welcome to the analysis menu")
+
+    
+    analysis_input = input(f"\n1. View genres across all {user}'s lists"
+                            f"\n2. View what range of dates {user}'s books are from"
+                            f"\n3. View the number of unique books across"
+                            "\n\nr. to return to managment menu\n"
+                            )
+    return analysis_input
+        
+        
 def user_genre_analysis(connection, username):
     try:
         with connection.cursor() as genre_analysis:
@@ -1037,9 +1075,9 @@ def user_genre_analysis(connection, username):
             result = genre_analysis.fetchall()
             
             if not result:
-                print(f"there are no books in your lists {username}!")
+                print(f"There are no books in your lists {username}!")
                 return
-            print("the genres you read are:\n")
+            print("The genres you read are:\n")
             for key in result:
                 genre = key.get("genres")
                 print(f"- {genre}")
@@ -1056,13 +1094,15 @@ def user_date_analysis(connection, username):
             result = date_analysis.fetchall()
             date1 = result[0].get("earliest_date")
             date2 = result[0].get("latest_date")
+            
             if date1 == date2:
-                print(f"The only date your book(s) are from is {date1}")
+                print(f"The only date your book(s) are from is {date1}\n\n")
             else:  
-                print(f"You have books from {date1} through {date2}!")
+                print(f"You have books from {date1} through {date2}!\n\n")
             return
     except Exception as e:
         print(f"Unexpected error: {e}")
+        
 def user_book_count_analysis(connection, username):
     try:
         with connection.cursor() as book_num_analysis:
@@ -1073,7 +1113,7 @@ def user_book_count_analysis(connection, username):
             book = "books"
             if total_books == 1:
                 book = "book"
-            print(f"You have a total of {total_books} {book} ")
+            print(f"You have a total of {total_books} {book} in your lists\n\n")
         
     except Exception as e:
         print(f"Unexpected error: {e}")
