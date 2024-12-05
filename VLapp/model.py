@@ -774,7 +774,7 @@ def print_list_names_of_user(connection, username):
 
             # If not book lists found
             if not book_lists:
-                print("No book lists found for the user.")
+                print(f"No book lists found for the user '{username}'.")
                 return
 
             while True:
@@ -820,7 +820,7 @@ def print_user_book_lists(connection, username):
                     selected_index = (input("\nEnter the number of the book list you want to view: "))
 
                     if not selected_index.isdigit():
-                        raise ValueError("Invalid input. Please enter a valid number.")
+                        raise ValueError(f"Invalid input '{selected_index}'. Please enter a valid number.")
                         continue
 
                     selected_index = int(selected_index)
@@ -836,7 +836,7 @@ def print_user_book_lists(connection, username):
                         fetch_books_in_list(connection, username, selected_list)
 
                     else:
-                        print("Invalid selection. Please choose a valid number.")
+                        print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
                 except ValueError as e:
                     print(f"Invalid input: {e}. Please enter a number.")
 
@@ -888,7 +888,7 @@ def export_user_book_list(connection, username):
 
             # If no book lists found
             if not book_lists:
-                print("No book lists found for the user.")
+                print(f"No book lists found for the user '{username}'.")
                 return
 
             # Display the user's saved book lists
@@ -917,7 +917,7 @@ def export_user_book_list(connection, username):
             # else:
                 # print(f"No books found in the book list '{selected_list}'.")
         else:
-            print("Invalid selection. Please choose a valid number.")
+            print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
     except ValueError:
         print("Invalid input. Please enter a number.")
 
@@ -968,9 +968,9 @@ def export_book_list_to_csv(book_list_name, books):
                     book.get("rating", "N/A")
                 ])
 
-        print(f"\nBook list successfully exported to {file_name}")
+        print(f"\nBook list successfully exported to {file_name}!")
     except Exception as e:
-        print(f"An error occured while exporting the book list: {e}")
+        print(f"An error occurred while exporting the book list: {e}")
 
 
 def parse_date(date):
@@ -1103,7 +1103,7 @@ Helper function that prints books in tabular format
 
 def print_books_tabular(book_list):
     if not book_list:
-        print("No books in book list to display.")
+        print(f"No books in book list '{book_list}' to display.")
         return
 
     # Define custom header mapping
@@ -1161,7 +1161,7 @@ def operate_on_user_book_lists(connection, username, operation):
             # If not book lists found
             if operation == "add":
                 if not book_lists:
-                    create_new_list = input("No book lists found for the user. Create new list? (y/n)\n")
+                    create_new_list = input(f"No book lists found for the user '{username}'. Create new list? (y/n)\n")
                     if (create_new_list.strip().lower() == "y"):
                         list_name = input("What is the name of the new list?\n")
                         create_user_book_list(connection, username, list_name)
@@ -1170,7 +1170,7 @@ def operate_on_user_book_lists(connection, username, operation):
                         return 0
             else:
                 if not book_lists:
-                    print("There are no lists to delete from, returning to search menu")
+                    print("There are no lists to delete from, returning to search menu.")
                     return 0
             if operation == "add":
                 while True:
@@ -1201,7 +1201,7 @@ def operate_on_user_book_lists(connection, username, operation):
                             return list_name
 
                         if selected_index == len(book_lists) + 2:
-                            print("Returning to search menu")
+                            print("Returning to search menu.")
                             return
                         # validate selected index
                         if 1 <= selected_index <= len(book_lists):
@@ -1235,7 +1235,7 @@ def operate_on_user_book_lists(connection, username, operation):
                         selected_index = int(selected_index)
 
                         if selected_index == len(book_lists) + 1:
-                            print("Returning to search menu")
+                            print("Returning to search menu.")
                             return
                         # validate selected index
                         if 1 <= selected_index <= len(book_lists):
@@ -1243,7 +1243,7 @@ def operate_on_user_book_lists(connection, username, operation):
                             return selected_list
 
                         else:
-                            print("Invalid selection. Please choose a valid number.")
+                            print(f"Invalid selection '{selected_index}'. Please choose a valid number.")
                     except ValueError as e:
                         print(f"Invalid input: {e}. Please enter a number.")
 
@@ -1348,7 +1348,7 @@ def user_genre_analysis(connection, username):
             result = genre_analysis.fetchall()
 
             if not result:
-                print(f"\nThere are no books in your lists {username}!")
+                print(f"\nThere are no books in your lists, {username}!")
                 return
             print("The genres you read are:\n")
             for key in result:
@@ -1367,7 +1367,7 @@ def user_most_read_genre_analysis(connection, username):
             most_read_genre_analysis.callproc("MostReadGenre", (username,))
             result = most_read_genre_analysis.fetchall()
             if not result:
-                print(f"\nThere are no books in your lists {username}!")
+                print(f"\nThere are no books in your lists, {username}!")
                 return
             
             if len(result) > 1:
