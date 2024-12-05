@@ -202,11 +202,11 @@ def drop_current_list(connection):
 
 def get_search_param(username):
     print("Please fill out the questions below, no response is acceptable.\n")
-    search_param = [input("What is the name of the genre: "),
-                    input("The book name: "),
-                    input("The last name of the publisher: "),
-                    input("The author name: "),
-                    input("The series name: "),
+    search_param = [input("Genre name: "),
+                    input("Book title: "),
+                    input("Publisher name: "),
+                    input("Author name: "),
+                    input("Series name: "),
                     username
                     ]
     return search_param
