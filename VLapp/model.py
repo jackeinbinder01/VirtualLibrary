@@ -274,6 +274,7 @@ def view_users(connection):
         code, msg = e.args
         print(f"View users error: {code} - {msg}")
 
+
 def admin_create_user(connection):
     username = input("Enter the user's username: ").strip()
     password = input("Enter the user's password: ").strip()
@@ -305,6 +306,7 @@ def admin_delete_user(connection):
         print(f"\nSuccessfully deleted '{username}'\n")
     except pymysql.Error as e:
         print(f"\nDelete user error: {e}\n")
+
 
 def admin_update_user_information(connection):
     answer = input(f"\nPlease select from the following options:\n"
@@ -385,6 +387,7 @@ def admin_update_user_information(connection):
             print(f"\nInvalid option '{answer}'. Please try again.")
             admin_update_user_information(connection)
 
+
 def make_user_admin(connection):
     username = input("Enter the user's username: ").strip()
 
@@ -455,12 +458,28 @@ def manage_menu(username):
     return answer
 
 
+def is_user_admin(connection, username):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT is_user_admin('{username}')")
+
+        result = cursor.fetchone()
+        key = f"is_user_admin('{username}')"
+
+        user_is_admin = result[key] if result else False
+        return user_is_admin
+    except Exception as e:
+        print(f"Admin check error: {e}")
+        return False
+
+
 def application_logic(connection, username):
     leave = True
     while leave:
         connection.commit()
 
-        user_is_admin = True
+        user_is_admin = is_user_admin(connection, username)
+
         if user_is_admin:
             main_menu_answer = admin_main_menu()
         else:

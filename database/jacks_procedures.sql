@@ -579,8 +579,33 @@ CREATE PROCEDURE view_users()
 
 DELIMITER ;
 
+DROP FUNCTION IF EXISTS is_user_admin;
+DELIMITER //
 
-CALL view_users()
+CREATE FUNCTION is_user_admin(username_p VARCHAR(64))
+RETURNS BOOL
+READS SQL DATA
+BEGIN
+    DECLARE is_admin BOOL;
 
+    IF NOT EXISTS (
+        SELECT
+            1
+        FROM user u
+        WHERE u.user_name = username_p
+            AND u.is_admin = TRUE
+    ) THEN
+        SET is_admin = FALSE;
+    ELSE
+        SET is_admin = TRUE;
+    END IF;
+
+    RETURN is_admin;
+END //
+
+DELIMITER ;
+
+
+SELECT is_user_admin('jack')
 
 
