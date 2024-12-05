@@ -5,6 +5,7 @@ import csv
 from datetime import datetime
 from tabulate import tabulate
 from PyQt6.QtWidgets import QApplication, QFileDialog
+import sys
 
 
 def connect_to_database():
@@ -860,7 +861,21 @@ Helper function that exports a given book list to a CSV file
 
 def export_book_list_to_csv(book_list_name, books):
     try:
-        file_name = f"{book_list_name.replace(' ', '_')}_book_list.csv"
+        # Initialize the application for the file dialog
+        app = QApplication(sys.argv)
+
+        # Open a file dialog to get the file path
+        file_name, _ = QFileDialog.getSaveFileName(
+            None,
+            "Save Book List As",
+            f"{book_list_name.replace(' ', '_')}_book_list.csv",
+            "CSV Files (*.csv);;All Files(*)"
+        )
+
+        # Exit if user cancels the save operation
+        if not file_name:
+            print("\nExport canceled.")
+            return
 
         # Write book data to the CSV file
         with open(file_name, mode='w', newline='', encoding='utf-8') as file:
