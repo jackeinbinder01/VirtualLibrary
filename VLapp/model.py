@@ -128,7 +128,7 @@ def login_user(connection):
         if login_status == "Login Successful":
             return username
         else:
-            print("\nLogin procedure did not return a valid status after account creation.")
+            print("\nFailed to login to the Virtual Library. Closing Application.")
             return False
     except pymysql.Error as e:
         print(f"Error during login: {e}")
