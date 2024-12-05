@@ -447,7 +447,7 @@ def search_menu(current_list=None):
                    "\n3. Remove a specific book by book id"
                    "\n4. Add/update a rating on a book by book id"
                    "\n5. Add a URL to access a copy of a book"
-                   "\n\nr. Return to the main menu\n\n")
+                   "\nr. Return to the main menu\n\n")
     return answer
 
 
