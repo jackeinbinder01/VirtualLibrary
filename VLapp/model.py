@@ -958,3 +958,74 @@ def delete_book_list(connection, username):
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
+        
+def user_genre_analysis(connection, username):
+    try:
+        with connection.cursor() as genre_analysis:
+            genre_analysis.callproc("FetchUserGenres", (username,))
+            result = genre_analysis.fetchall()
+            
+            if not result:
+                print(f"there are no books in your lists {username}!")
+                return
+            print("the genres you read are:\n")
+            for key in result:
+                genre = key.get("genres")
+                print(f"- {genre}")
+            print("\n")
+            return
+            # print_analysis_tabular(result, "genres")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        
+def user_date_analysis(connection, username):
+    try:
+        with connection.cursor() as date_analysis:
+            date_analysis.callproc("DateRangeUserBooks", (username,))
+            result = date_analysis.fetchall()
+            date1 = result[0].get("earliest_date")
+            date2 = result[0].get("latest_date")
+            if date1 == date2:
+                print(f"The only date your book(s) are from is {date1}")
+            else:  
+                print(f"You have books from {date1} through {date2}!")
+            return
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+def user_book_count_analysis(connection, username):
+    try:
+        with connection.cursor() as book_num_analysis:
+            book_num_analysis.callproc("CountUserBooks", (username,))
+            result = book_num_analysis.fetchall()
+            
+            total_books = result[0].get("total_unique_books")
+            book = "books"
+            if total_books == 1:
+                book = "book"
+            print(f"You have a total of {total_books} {book} ")
+        
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+
+def user_format_analysis(connection, username):
+    pass
+    
+# def print_analysis_tabular(data, analysis_type):
+#     key_to_header = {
+#         f"{analysis_type}": f"{analysis_type.capitalize()}",
+#     }
+
+#     # Reformat the data to match the custom header names
+#     formatted_info = [
+#         {
+#             key_to_header[f"{analysis_type}"]: data_type.get(f"{analysis_type}", "N/A"),
+#         }
+#         for data_type in data
+#     ]
+
+#     # Extract the headers in the desired order
+#     custom_headers = list(key_to_header.values())
+
+#     # Debugging output
+#     print("Formatted books (final structure):", formatted_info)
+#     print("Custom headers:", custom_headers)

@@ -481,5 +481,59 @@ CALL CreateUserBookList('bob', 'test_list3');
 SELECT @status_message;
 
 
+DELIMITER $$
+
+CREATE PROCEDURE FetchUserGenres(
+    IN username_p VARCHAR(64)
+)
+BEGIN
+    SELECT DISTINCT g.genre_name AS genres
+    FROM book_list_book blb
+    JOIN book_list bl ON blb.book_list_name = bl.list_name
+    JOIN book_genre bg USING(book_id)
+    JOIN genre g USING(genre_name)
+    WHERE bl.user_name = username_p
+    ORDER BY g.genre_name;
+END $$
+
+DELIMITER ;
+CALL FetchUserGenres('s');
+
+DELIMITER $$
+
+CREATE PROCEDURE CountUserBooks(
+    IN username_p VARCHAR(64)
+)
+BEGIN
+    SELECT COUNT(DISTINCT blb.book_id) AS total_unique_books
+    FROM book_list_book blb
+    JOIN book_list bl ON blb.book_list_name = bl.list_name
+    WHERE bl.user_name = username_p;
+END $$
+
+DELIMITER ;
+
+CALL CountUserBooks('s');
+
+
+DELIMITER $$
+
+CREATE PROCEDURE DateRangeUserBooks(
+    IN username_p VARCHAR(64)
+)
+BEGIN
+    SELECT 
+        MIN(b.release_date) AS earliest_date,
+        MAX(b.release_date) AS latest_date
+    FROM book_list_book blb
+    JOIN book_list bl ON blb.book_list_name = bl.list_name
+    JOIN book b ON blb.book_id = b.book_id
+    WHERE bl.user_name = username_p;
+END $$
+
+DELIMITER ;
+
+CALL DateRangeUserBooks('s');
+
 
 
