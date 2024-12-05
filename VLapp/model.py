@@ -825,7 +825,7 @@ def print_user_book_lists(connection, username):
 
             while True:
                 # Display the user's saved book lists
-                print(f"{username}'s saved book lists: ")
+                print(f"\n{username}'s saved book lists:\n")
                 for index, book_list in enumerate(book_lists, start=1):
                     print(f"{index}. {book_list['list_name']}")
 
@@ -909,7 +909,7 @@ def export_user_book_list(connection, username):
                 return
 
             # Display the user's saved book lists
-            print(f"\n{username}'s saved book lists:")
+            print(f"\n{username}'s saved book lists:\n")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
@@ -1194,7 +1194,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "add":
                 while True:
                     # Display the user's saved book lists
-                    print(f"\n{username}'s saved book lists: \n")
+                    print(f"\n{username}'s saved book lists:\n")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1235,7 +1235,7 @@ def operate_on_user_book_lists(connection, username, operation):
             if operation == "delete":
                 while True:
                     # Display the user's saved book lists
-                    print(f"{username}'s saved book lists: ")
+                    print(f"\n{username}'s saved book lists:\n")
                     for index, book_list in enumerate(book_lists, start=1):
                         print(f"{index}. {book_list['list_name']}")
 
@@ -1288,7 +1288,7 @@ def delete_book_list(connection, username):
                 return
 
             # Display book lists with corresponding numbers
-            print(f"{username}'s saved book lists:")
+            print(f"\n{username}'s saved book lists:\n")
             for index, book_list in enumerate(book_lists, start=1):
                 print(f"{index}. {book_list['list_name']}")
 
