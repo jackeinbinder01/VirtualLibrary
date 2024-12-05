@@ -1348,7 +1348,7 @@ def analysis_logic(connection, username):
 def analysis_menu(connection, username):
     user = username
     print("\nWelcome to the User Analytics Menu!\n"
-          "Please select from the following options:\n")
+          "Please select from the following options:")
     analysis_input = input(f"\n1. View genres across all {user}'s lists"
                            f"\n2. View {user}'s most read genre"
                            f"\n3. View the number of unique books"
