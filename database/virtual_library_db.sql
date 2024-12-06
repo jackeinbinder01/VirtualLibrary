@@ -26,7 +26,7 @@ CREATE TABLE book
 (
     book_id INT AUTO_INCREMENT PRIMARY KEY
     , book_title VARCHAR(256) NOT NULL
-    , author_id INT # authors can be null, reflect in uml
+    , author_id INT
     , publisher_id INT NOT NULL
     , release_date DATE NOT NULL
 
