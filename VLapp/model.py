@@ -76,6 +76,7 @@ def manage_menu(username):
         "5. Remove a book from a book list\n"
         "6. Export a book list to csv file\n"
         "7. Import a book list from a csv file\n"
+        "8. View a books url and format\n"
         "r. Return to main menu\n\n")
     return answer
 

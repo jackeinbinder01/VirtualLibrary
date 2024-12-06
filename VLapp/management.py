@@ -2,7 +2,7 @@ import csv
 import os
 import sys
 from datetime import datetime
-
+import management
 import pymysql
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
@@ -47,6 +47,9 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '7':
             import_book_list_from_csv(connection, username)
+        
+        elif list_menu_answer.strip() == '8':
+            get_format_url_from_id(connection)
 
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
@@ -512,5 +515,18 @@ def delete_book_list(connection, username):
         print("Invalid input. Please enter a number.")
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        
+def get_format_url_from_id(connection):
+    try:
+        book_id, book_title = search.grab_book_by_id(connection, "find")
+        with connection.cursor() as format_url:
+            format_url.callproc("GetBookFormatsAndURLs", (book_id,))
+            format_and_url_list = format_url.fetchall()
+            print(f"Below are the formats and urls for {book_title}:\n\n")
+            for dict in format_and_url_list:
+                print(f"Format: {dict.get("format_type")}\nURL: {dict.get("format_url")}\n")
+            
     except Exception as e:
         print(f"Unexpected error: {e}")
