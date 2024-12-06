@@ -1,6 +1,5 @@
 import model_archive as model
 import pymysql
-import db_and_app_login
 
 
 def work():
