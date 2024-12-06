@@ -12,7 +12,6 @@ import analysis
 import management
 
 
-
 def main_menu():
     print("Please select from the following options:")
     answer = input("\n1. Search the Virtual Library for books"
@@ -22,78 +21,6 @@ def main_menu():
     return answer
 
 
-def admin_main_menu():
-    print("Please select from the following options:")
-    answer = input("\n1. Search the Virtual Library for books"
-                   "\n2. Manage my saved book lists"
-                   "\n3. View user analytics"
-                   "\n4. Manage users"
-                   "\nq. Quit\n\n")
-    return answer
-
-
-def manage_users_menu(connection, admin_user_name):
-    print("\nWelcome to the Manage Users Menu!\n"
-          "Please select from the following options:\n")
-    answer = input("1. View users in database"
-                   "\n2. Create a user account"
-                   "\n3. Delete a user account"
-                   "\n4. Update a user's information"
-                   "\n5. Make a user an Admin"
-                   "\n6. Demote a user from Admin"
-                   "\nr. Return to main menu\n\n")
-    match answer.lower():
-        case '1':
-            admin.admin_view_users(connection, admin_user_name)
-        case '2':
-            admin.admin_create_user(connection, admin_user_name)
-        case '3':
-            admin.admin_delete_user(connection, admin_user_name)
-        case '4':
-            admin.admin_update_user_information(connection, admin_user_name)
-        case '5':
-            admin.make_user_admin(connection, admin_user_name)
-        case '6':
-            admin.demote_user_from_admin(connection, admin_user_name)
-        case 'r':
-            application_logic(connection, admin_user_name)
-
-
-
-
-
-
-def manage_menu(username):
-    # model.print_user_lists_names(username)
-
-    print("\nWelcome to the Management Menu!\n"
-          "Please select from the following options:\n")
-    answer = input(
-        "1. Create a new book list\n"
-        "2. View my book lists\n"
-        "3. Delete an existing book list\n"
-        "4. Add a book to a book list\n"
-        "5. Remove a book from a book list\n"
-        "6. Export a book list to csv file\n"
-        "7. Import a book list from a csv file\n"
-        "8. View a books url and format\n"
-        "r. Return to main menu\n\n")
-    return answer
-
-
-def is_user_admin(connection, username):
-    try:
-        cursor = connection.cursor()
-        cursor.execute(f"SELECT is_user_admin('{username}')")
-
-        result = cursor.fetchone()
-        key = f"is_user_admin('{username}')"
-
-        user_is_admin = result[key] if result else False
-        return user_is_admin
-    except Exception as e:
-        print(f"Admin check error: {e}")
-        return False
 
 
 def application_logic(connection, username):
@@ -101,9 +28,9 @@ def application_logic(connection, username):
     while leave:
         connection.commit()
 
-        user_is_admin = is_user_admin(connection, username)
+        user_is_admin = admin.is_user_admin(connection, username)
         if user_is_admin:
-            main_menu_answer = admin_main_menu()
+            main_menu_answer = admin.admin_main_menu()
         else:
             main_menu_answer = main_menu()
 
@@ -123,7 +50,7 @@ def application_logic(connection, username):
             analysis.analysis_logic(connection, username)
 
         elif main_menu_answer.strip() == "4" and user_is_admin:
-            manage_users_menu(connection, username)
+            admin.manage_users_menu(connection, username)
 
 
 
@@ -134,27 +61,6 @@ def application_logic(connection, username):
 
         # Add more list management logic here as needed
 
-
-'''
-Helper funtion to create new user book list
-'''
-
-
-def create_user_book_list(connection, user_name, book_list_name):
-    try:
-        with connection.cursor() as cursor:
-            cursor.callproc('CreateUserBookList', (user_name, book_list_name))
-
-            cursor.execute('SELECT @status_message')
-            result = cursor.fetchone()
-
-            if result and 'status_message' in result:
-                return result['status_message\n']
-            else:
-                return "Book list created successfully."
-    except pymysql.MySQLError as e:
-        print(f"Database error: {e}")
-        return None
 
 '''
 Helper function that prints books in tabular format

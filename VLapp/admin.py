@@ -3,6 +3,32 @@ import tabulate
 import management
 import model
 
+def manage_users_menu(connection, admin_user_name):
+    print("\nWelcome to the Manage Users Menu!\n"
+          "Please select from the following options:\n")
+    answer = input("1. View users in database"
+                   "\n2. Create a user account"
+                   "\n3. Delete a user account"
+                   "\n4. Update a user's information"
+                   "\n5. Make a user an Admin"
+                   "\n6. Demote a user from Admin"
+                   "\nr. Return to main menu\n\n")
+    match answer.lower():
+        case '1':
+            admin_view_users(connection, admin_user_name)
+        case '2':
+            admin_create_user(connection, admin_user_name)
+        case '3':
+            admin_delete_user(connection, admin_user_name)
+        case '4':
+            admin_update_user_information(connection, admin_user_name)
+        case '5':
+            make_user_admin(connection, admin_user_name)
+        case '6':
+            demote_user_from_admin(connection, admin_user_name)
+        case 'r':
+            model.application_logic(connection, admin_user_name)
+
 
 def admin_view_users(connection, admin_user_name):
     try:
@@ -185,3 +211,25 @@ def demote_user_from_admin(connection, admin_user_name):
     except pymysql.Error as e:
         print(f"\nDemote user from admin error: {e}\n")
 
+def is_user_admin(connection, username):
+    try:
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT is_user_admin('{username}')")
+
+        result = cursor.fetchone()
+        key = f"is_user_admin('{username}')"
+
+        user_is_admin = result[key] if result else False
+        return user_is_admin
+    except Exception as e:
+        print(f"Admin check error: {e}")
+        return False
+    
+def admin_main_menu():
+    print("Please select from the following options:")
+    answer = input("\n1. Search the Virtual Library for books"
+                   "\n2. Manage my saved book lists"
+                   "\n3. View user analytics"
+                   "\n4. Manage users"
+                   "\nq. Quit\n\n")
+    return answer
