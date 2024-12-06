@@ -1,6 +1,4 @@
 import model
-import pymysql
-
 import db_and_app_login
 
 
@@ -22,11 +20,3 @@ def work():
         return
     model.application_logic(connection, username)
     connection.commit()
-
-
-def main():
-    work()
-
-
-if __name__ == "__main__":
-    main()

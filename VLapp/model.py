@@ -21,8 +21,6 @@ def main_menu():
     return answer
 
 
-
-
 def application_logic(connection, username):
     leave = True
     while leave:
@@ -56,8 +54,6 @@ def application_logic(connection, username):
 
         else:
             print("Invalid input. Please try again.")
-
-
 
         # Add more list management logic here as needed
 
@@ -111,9 +107,3 @@ def print_books_tabular(book_list):
         print(tabulate.tabulate(formatted_books, headers="keys", tablefmt="fancy_grid"))
     except ValueError as e:
         print(f"Error displaying table.")
-
-
-
-
-
-

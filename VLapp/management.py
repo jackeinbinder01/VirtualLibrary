@@ -2,16 +2,14 @@ import csv
 import os
 import sys
 from datetime import datetime
-import management
 import pymysql
 from PyQt6.QtWidgets import QApplication, QFileDialog
 
 import model
 import search
 
-def manage_menu(username):
-    # model.print_user_lists_names(username)
 
+def manage_menu():
     print("\nWelcome to the Management Menu!\n"
           "Please select from the following options:\n")
     answer = input(
@@ -22,14 +20,15 @@ def manage_menu(username):
         "5. Remove a book from a book list\n"
         "6. Export a book list to csv file\n"
         "7. Import a book list from a csv file\n"
-        "8. View a books url and format\n"
+        "8. Add a URL to access a copy of a book\n"
         "r. Return to main menu\n\n")
     return answer
+
 
 def manage_lists_logic(connection, username):
     while True:
         connection.commit()
-        list_menu_answer = manage_menu(username)
+        list_menu_answer = manage_menu()
 
         if list_menu_answer.strip() == '1':
             book_list_name = input("\nEnter the name of the book list you wish to create: \n")
@@ -64,19 +63,20 @@ def manage_lists_logic(connection, username):
 
         elif list_menu_answer.strip() == '7':
             import_book_list_from_csv(connection, username)
-        
-        elif list_menu_answer.strip() == '8':
-            get_format_url_from_id(connection)
+
+        elif list_menu_answer.strip() == '8':  # Add a URL to the database
+            add_url_to_db(connection)
 
         # quit to main menu
         elif list_menu_answer.strip().lower() == 'r':
             print("Returning to main menu...")
             break
 
-'''
-Helper function to retrieve and display a user's saved book lists
-'''
+
 def print_user_book_lists(connection, username):
+    """
+    Helper function to retrieve and display a user's saved book lists
+    """
     try:
         with connection.cursor() as cursor:
             # Call the stored procedure
@@ -125,12 +125,10 @@ def print_user_book_lists(connection, username):
         print(f"Database error: {e}")
 
 
-'''
-Helper function to call procedure to retrieve books from book list
-'''
-
-
 def fetch_books_in_list(connection, username, book_list_name):
+    """
+    Helper function to call procedure to retrieve books from book list
+    """
     try:
         with connection.cursor() as cursor:
             # Call stored procedure
@@ -152,12 +150,10 @@ def fetch_books_in_list(connection, username, book_list_name):
         return []
 
 
-'''
-Helper function to export book list to a csv file.
-'''
-
-
 def export_user_book_list(connection, username):
+    """
+    Helper function to export book list to a csv file.
+    """
     try:
         with connection.cursor() as cursor:
             # call stored procedure to fetch book lists
@@ -205,12 +201,10 @@ def export_user_book_list(connection, username):
         print(f"Database error: {e}")
 
 
-'''
-Helper function that exports a given book list to a CSV file
-'''
-
-
 def export_book_list_to_csv(book_list_name, books):
+    """
+    Helper function that exports a given book list to a CSV file
+    """
     try:
         # Initialize the application for the file dialog
         app = QApplication(sys.argv)
@@ -263,7 +257,6 @@ def parse_date(date):
             continue
 
     return None
-
 
 
 def import_book_list_from_csv(connection, username):
@@ -379,8 +372,6 @@ def import_book_list_from_csv(connection, username):
         cursor.close()
 
 
-
-
 def operate_on_user_book_lists(connection, username, operation):
     try:
         with connection.cursor() as cursor:
@@ -483,12 +474,10 @@ def operate_on_user_book_lists(connection, username, operation):
         print(f"Database error: {e}")
 
 
-'''
-Helper function to delete a book list
-'''
-
-
 def delete_book_list(connection, username):
+    """
+    Helper function to delete a book list
+    """
     try:
         with connection.cursor() as cursor:
             # Fetch the user's book lists
@@ -534,30 +523,12 @@ def delete_book_list(connection, username):
         print(f"Database error: {e}")
     except Exception as e:
         print(f"Unexpected error: {e}")
-        
-def get_format_url_from_id(connection):
-    try:
-        book_id, book_title = search.grab_book_by_id(connection, "find")
-        with connection.cursor() as format_url:
-            format_url.callproc("GetBookFormatsAndURLs", (book_id,))
-            format_and_url_list = format_url.fetchall()
-            # print(format_and_url_list[0].get("format_type"))
-            if not format_and_url_list or format_and_url_list[0].get("format_type") == None:
-                print("\nNo formats found\n\n")
-                return
-                
-            print(f"Below are the formats and urls for {book_title}:\n\n")
-            for dict in format_and_url_list:
-                print(f"Format: {dict.get("format_type")}\nURL: {dict.get("format_url")}\n")
-            
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        
 
-'''
-Helper funtion to create new user book list
-'''
+
 def create_user_book_list(connection, user_name, book_list_name):
+    """
+    Helper funtion to create new user book list
+    """
     try:
         with connection.cursor() as cursor:
             cursor.callproc('CreateUserBookList', (user_name, book_list_name))
@@ -572,3 +543,39 @@ def create_user_book_list(connection, user_name, book_list_name):
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
         return None
+
+
+def add_url_to_db(connection):
+    book_name = input("Enter the name of the book that the URL links to: ")
+    book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
+    url = input("Enter the URL: ")
+
+    while True:
+        book_format = input("Enter the format of the book: \n"
+                            "\n1. Hardcover\n"
+                            "2. Paperback\n"
+                            "3. PDF\n"
+                            "4. eBook\n"
+                            "5. Audiobook\n\n").strip().lower()
+        valid_formats = {'1': 'Hardcover',
+                         '2': 'Paperback',
+                         '3': 'PDF',
+                         '4': 'eBook',
+                         '5': 'Audiobook',
+                         'hardcover': 'Hardcover',
+                         'paperback': 'Paperback',
+                         'pdf': 'PDF',
+                         'ebook': 'eBook',
+                         'audiobook': 'Audiobook'}
+        if book_format in valid_formats:
+            book_format = valid_formats[book_format]
+            break
+        else:
+            print(f"\nInvalid book format {book_format}. Please try again.")
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute(f"CALL add_link('{url}', '{book_format}', '{book_name}', '{book_release_date}')")
+        print("\nURL added successfully!")
+    except pymysql.Error as e:
+        print(f"\nURL could not be added: {e}")

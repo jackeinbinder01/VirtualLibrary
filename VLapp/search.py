@@ -1,23 +1,24 @@
 import pymysql
-import analysis
 import model
 import management
 
-def search_menu(current_list=None):
+
+def search_menu():
     print("\nWelcome to the Search Menu!\n"
           "Please select from the following options:")
     answer = input("\n1. Search for books by genre, publisher, author name, book name, or series name"
                    "\n2. Add a specific book by book id to a list"
                    "\n3. Remove a specific book by book id"
                    "\n4. Add/update a rating on a book by book id"
-                   "\n5. Add a URL to access a copy of a book"
+                   "\n5. View book availability by format and URL"
                    "\nr. Return to the main menu\n\n")
     return answer
+
 
 def search_logic(connection, username):
     while True:
         connection.commit()
-        search_menu_answer = search_menu(username)
+        search_menu_answer = search_menu()
 
         # Quit to main menu
         if search_menu_answer.strip().lower() == 'r':
@@ -36,11 +37,9 @@ def search_logic(connection, username):
         elif search_menu_answer.strip() == '4':  # Update a rating on a book
             update_rating_logic(connection, username)
 
-        elif search_menu_answer.strip() == '5':  # Add a URL to the database
-            add_url_to_db(connection)
+        elif search_menu_answer.strip() == '5':
+            get_format_url_from_id(connection)
 
-        elif search_menu_answer.strip() == '6':  # go to analysis menu
-            analysis.analysis_logic(connection, username)
         else:
             print(f"Invalid input '{search_menu_answer}'. Please try again.")
 
@@ -86,7 +85,8 @@ def print_list_names_of_user(connection, username):
                 return
     except pymysql.MySQLError as e:
         print(f"Database error: {e}")
-        
+
+
 def get_list(search_param, connection):
     # Replace empty strings with None to match SQL's NULL behavior
     search_param = [param if param != "" else None for param in search_param]
@@ -155,42 +155,6 @@ def get_search_param(username):
                     username
                     ]
     return search_param
-
-
-def add_url_to_db(connection):
-    book_name = input("Enter the name of the book that the URL links to: ")
-    book_release_date = input("Enter the book release date in the format: (yyyy-mm-dd): ")
-    url = input("Enter the URL: ")
-
-    while True:
-        book_format = input("Enter the format of the book: \n"
-                            "\n1. Hardcover\n"
-                            "2. Paperback\n"
-                            "3. PDF\n"
-                            "4. eBook\n"
-                            "5. Audiobook\n\n").strip().lower()
-        valid_formats = {'1': 'Hardcover',
-                         '2': 'Paperback',
-                         '3': 'PDF',
-                         '4': 'eBook',
-                         '5': 'Audiobook',
-                         'hardcover': 'Hardcover',
-                         'paperback': 'Paperback',
-                         'pdf': 'PDF',
-                         'ebook': 'eBook',
-                         'audiobook': 'Audiobook'}
-        if book_format in valid_formats:
-            book_format = valid_formats[book_format]
-            break
-        else:
-            print(f"\nInvalid book format {book_format}. Please try again.")
-
-    cursor = connection.cursor()
-    try:
-        cursor.execute(f"CALL add_link('{url}', '{book_format}', '{book_name}', '{book_release_date}')")
-        print("\nURL added successfully!")
-    except pymysql.Error as e:
-        print(f"\nURL could not be added: {e}")
 
 
 def add_book_by_id_logic(connection, username):
@@ -293,3 +257,21 @@ def rate_book(username, book_id, score, comment, connection):
     except pymysql.Error as e:
         print(f"Error retrieving book: {e}")
 
+
+def get_format_url_from_id(connection):
+    try:
+        book_id, book_title = grab_book_by_id(connection, "find")
+        with connection.cursor() as format_url:
+            format_url.callproc("GetBookFormatsAndURLs", (book_id,))
+            format_and_url_list = format_url.fetchall()
+            # print(format_and_url_list[0].get("format_type"))
+            if not format_and_url_list or format_and_url_list[0].get("format_type") == None:
+                print("\nNo formats found\n\n")
+                return
+
+            print(f"Below are the formats and urls for {book_title}:\n\n")
+            for dict in format_and_url_list:
+                print(f"Format: {dict.get("format_type")}\nURL: {dict.get("format_url")}\n")
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")

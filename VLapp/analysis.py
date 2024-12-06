@@ -22,15 +22,14 @@ def analysis_logic(connection, username):
             return
 
 
-def analysis_menu(connection, username):
-    user = username
+def analysis_menu(username):
     print("\nWelcome to the User Analytics Menu!\n"
           "Please select from the following options:")
-    analysis_input = input(f"\n1. View genres across all {user}'s lists"
-                           f"\n2. View {user}'s most read genre"
+    analysis_input = input(f"\n1. View genres across all {username}'s lists"
+                           f"\n2. View {username}'s most read genre"
                            f"\n3. View the number of unique books"
-                           f"\n4. View authors across all {user}'s lists"
-                           f"\n5. View {user}'s most read author"
+                           f"\n4. View authors across all {username}'s lists"
+                           f"\n5. View {username}'s most read author"
                            f"\nr. Return to managment menu\n\n"
                            )
     return analysis_input

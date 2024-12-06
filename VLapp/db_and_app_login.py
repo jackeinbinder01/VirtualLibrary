@@ -1,5 +1,6 @@
 import pymysql
 
+
 def connect_to_database():
     """
     Handles connects to MySQL the database.
