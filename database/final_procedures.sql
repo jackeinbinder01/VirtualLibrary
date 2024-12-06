@@ -556,5 +556,26 @@ BEGIN
 END $$
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS GetBookFormatsAndURLs;
+DELIMITER $$
+
+CREATE PROCEDURE GetBookFormatsAndURLs (
+    IN input_book_id INT
+)
+BEGIN
+    SELECT 
+        b.book_id,
+        b.book_title,
+        l.url AS format_url,
+        l.format_type AS format_type
+    FROM book b
+    LEFT JOIN link l ON b.book_id = l.book_id
+    WHERE b.book_id = input_book_id;
+END $$
+
+DELIMITER ;
+
+CALL GetBookFormatsAndURLs('1');
+
 
 
