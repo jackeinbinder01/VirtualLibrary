@@ -85,7 +85,7 @@ def user_author_analysis(connection, username):
             author_analysis.callproc("AuthorDiversity", (username,))
             result = author_analysis.fetchall()
 
-            print("The Authors you read are:\n")
+            print("The number of Authors you read is:\n")
             for key in result:
                 author = key.get("unique_authors")
                 print(f"- {author}")
