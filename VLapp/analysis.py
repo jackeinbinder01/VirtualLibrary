@@ -111,7 +111,7 @@ def user_most_read_author_analysis(connection, username):
                 print("\n")
             else:
                 author = result[0]
-                print(f"{username}'s most read genre is:\n")
+                print(f"{username}'s most read author is:\n")
                 print(f"- {author.get("author_name")}\n\n")
             return
     except Exception as e:
