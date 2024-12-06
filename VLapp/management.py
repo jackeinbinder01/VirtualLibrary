@@ -409,7 +409,7 @@ def operate_on_user_book_lists(connection, username, operation):
                         # if user selects option to return to management menu
                         if selected_index == len(book_lists) + 1:
                             list_name = input("What is the name of the new list?\n")
-                            create_user_book_list(connection, username, list_name)
+                            search.create_user_book_list(connection, username, list_name)
                             return list_name
 
                         if selected_index == len(book_lists) + 2:

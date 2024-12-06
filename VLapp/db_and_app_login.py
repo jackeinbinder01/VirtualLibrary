@@ -7,13 +7,13 @@ def connect_to_database():
     :return: None if user does not want to reconnect
     """
     while True:
-        username = input("Enter your MySQL username: ").strip()
-        pword = input("Enter your MySQL password: ").strip()
+        # username = input("Enter your MySQL username: ").strip()
+        # pword = input("Enter your MySQL password: ").strip()
         try:
             connection = pymysql.connect(
                 host='localhost',
-                user=username,
-                password=pword,
+                user="root",
+                password="Basti101",
                 database="virtual_library_db",
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=True

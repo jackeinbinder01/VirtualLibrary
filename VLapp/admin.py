@@ -1,6 +1,7 @@
 import pymysql
 import tabulate
 import management
+import model
 
 
 def admin_view_users(connection, admin_user_name):
@@ -22,7 +23,7 @@ def admin_view_users(connection, admin_user_name):
                 ]
                 table = tabulate.tabulate(clean_data, headers="keys", tablefmt="grid")
                 print(f'{table}')
-                management.manage_users_menu(connection, admin_user_name)
+                model.manage_users_menu(connection, admin_user_name)
     except pymysql.Error as e:
         code, msg = e.args
         print(f"View users error: {code} - {msg}")
@@ -34,7 +35,7 @@ def admin_create_user(connection, admin_user_name):
 
     if username == '' or password == '':
         print("\nCreate user error: Username and/or password cannot be blank.")
-        management.manage_users_menu(connection, admin_user_name)
+        model.manage_users_menu(connection, admin_user_name)
         return
 
     try:
@@ -50,7 +51,7 @@ def admin_delete_user(connection, admin_user_name):
 
     if username == '':
         print("\nDelete User Error: Username cannot be blank.")
-        management.manage_users_menu(connection, admin_user_name)
+        model.manage_users_menu(connection, admin_user_name)
         return
 
     try:
