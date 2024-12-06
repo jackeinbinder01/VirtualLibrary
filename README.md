@@ -24,3 +24,8 @@
 
 ### Importing Book Lists via CSV:
 - When importing CSV files from the User Management Menu, please populate and upload this [CSV import template.](https://docs.google.com/spreadsheets/d/178eVOzfZrM_9BbGejvjasOyx_5O0HJyCERbX8xg_alc/edit?gid=0#gid=0)
+
+### Running the Virtual Library Application
+To use the Virtual Library:
+- Execute the included data dump (virtual_library_db_dump.sql)
+- Run the main.py file in the Application Code folder. Make sure the other python files are in the same folder as main.py
