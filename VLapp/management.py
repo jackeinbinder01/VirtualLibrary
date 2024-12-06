@@ -524,6 +524,11 @@ def get_format_url_from_id(connection):
         with connection.cursor() as format_url:
             format_url.callproc("GetBookFormatsAndURLs", (book_id,))
             format_and_url_list = format_url.fetchall()
+            # print(format_and_url_list[0].get("format_type"))
+            if not format_and_url_list or format_and_url_list[0].get("format_type") == None:
+                print("\nNo formats found\n\n")
+                return
+                
             print(f"Below are the formats and urls for {book_title}:\n\n")
             for dict in format_and_url_list:
                 print(f"Format: {dict.get("format_type")}\nURL: {dict.get("format_url")}\n")
